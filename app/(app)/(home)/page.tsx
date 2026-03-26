@@ -595,10 +595,10 @@ export default function HomePage() {
         .hm-about-card-lbl { color: rgba(255,255,255,.6); font-size: 12px; font-family: 'DM Mono', monospace; margin-top: 6px; letter-spacing: .04em; text-transform: uppercase; }
 
         /* ── FOOTER ── */
-        .hm-footer { background: #0f172a; padding: 40px 32px; text-align: center; }
+        .hm-footer { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1f1f1f 100%); padding: 40px 32px; text-align: center; }
         .hm-footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; color: #fff; letter-spacing: .06em; margin-bottom: 8px; }
         .hm-footer-logo em { font-style: normal; color: #0fbf9f; }
-        .hm-footer-sub { color: #475569; font-size: 13px; font-family: 'DM Mono', monospace; }
+        .hm-footer-sub { color: rgba(255,255,255,.5); font-size: 13px; font-family: 'DM Mono', monospace; }
 
         /* ── RESPONSIVE ── */
         @media (max-width: 900px) {
@@ -696,7 +696,7 @@ export default function HomePage() {
             className="hm-mobile-login"
             onClick={() => setMenuOpen(false)}
           >
-            Login ke Dashboard
+            Login
           </Link>
         </div>
       </nav>
