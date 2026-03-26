@@ -298,30 +298,42 @@ export default function HomePage() {
 
         .hm-nav-links { display: flex; align-items: center; gap: 4px; }
         .hm-nav-link {
-          padding: 8px 18px; border-radius: 8px;
-          font-size: 14px; font-weight: 600; color: #475569;
-          text-decoration: none; cursor: pointer;
-          transition: color .2s, background .2s;
-          border: none; background: none;
+        padding: 8px 18px; border-radius: 8px;
+        font-size: 14px; font-weight: 600; color: rgba(255,255,255,.8);
+        text-decoration: none; cursor: pointer;
+        transition: color .2s, background .2s;
+        border: none; background: none;
         }
-        .hm-nav-link:hover { color: #087463; background: rgba(8,116,99,.07); }
-        .hm-nav-link.active { color: #087463; background: rgba(8,116,99,.1); }
+        .hm-nav-link:hover { color: #fff; background: rgba(255,255,255,.1); }
+        .hm-nav-link.active { color: #fff; background: none; }
+
+        /* Saat scrolled — navbar putih, link jadi gelap */
+        .hm-nav.scrolled .hm-nav-link { color: #475569; }
+        .hm-nav.scrolled .hm-nav-link:hover { color: #087463; background: rgba(8,116,99,.07); }
+        .hm-nav.scrolled .hm-nav-link.active { color: #087463; background: none; }
 
         .hm-nav-cta {
           display: flex; align-items: center; gap: 12px;
         }
         .hm-btn-login {
-          height: 40px; padding: 0 22px;
-          background: #087463; color: #fff;
-          border: none; border-radius: 9px;
-          font-size: 14px; font-weight: 700;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          cursor: pointer; text-decoration: none;
-          display: flex; align-items: center;
-          transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 4px 12px rgba(8,116,99,.3);
+        height: 40px; padding: 0 22px;
+        background: #fff; color: #087463;
+        border: none; border-radius: 9px;
+        font-size: 14px; font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        cursor: pointer; text-decoration: none;
+        display: flex; align-items: center;
+        transition: background .2s, transform .15s, box-shadow .2s, color .2s;
+        box-shadow: 0 4px 12px rgba(0,0,0,.15);
         }
-        .hm-btn-login:hover { background: #065a4d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(8,116,99,.35); }
+        .hm-btn-login:hover { background: #f0faf7; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+
+        /* Saat navbar sudah scroll (background putih), button balik ke hijau */
+        .hm-nav.scrolled .hm-btn-login {
+        background: #087463; color: #fff;
+        box-shadow: 0 4px 12px rgba(8,116,99,.3);
+        }
+        .hm-nav.scrolled .hm-btn-login:hover { background: #065a4d; box-shadow: 0 6px 20px rgba(8,116,99,.35); }
 
         /* Hamburger */
         .hm-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; background: none; border: none; }
