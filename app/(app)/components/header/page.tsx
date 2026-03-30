@@ -43,7 +43,7 @@ interface HeaderProps {
   breadcrumb?: string
   showAddButton?: boolean
   notificationCount?: number
-  p: Record<string, string>
+  p?: Record<string, string>
 }
 
 export default function Header({
@@ -55,7 +55,7 @@ export default function Header({
   breadcrumb = "STOCKR / INVENTORY",
   showAddButton = true,
   notificationCount = 0,
-  p
+  p = {}
 }: HeaderProps) {
   const T = "0.3s ease"
 
