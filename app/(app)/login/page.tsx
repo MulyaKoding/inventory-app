@@ -210,7 +210,11 @@ export default function LoginPage() {
 
       <div className="lg-root">
         {/* Mobile topbar */}
-        <div className="lg-topbar">
+        <div
+          className="lg-topbar"
+          onClick={() => router.push("/")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="lg-topbar-logo">
             <span>INV</span>
           </div>
@@ -227,7 +231,11 @@ export default function LoginPage() {
           <div className="lg-c2" />
           <div className="lg-grid" />
 
-          <div className="lg-brand">
+          <div
+            className="lg-brand"
+            onClick={() => router.push("/")}
+            style={{ cursor: "pointer" }}
+          >
             <div className="lg-brand-logo">
               <span>INV</span>
             </div>

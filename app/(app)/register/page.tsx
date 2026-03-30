@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [form, setForm] = useState({
@@ -250,7 +252,11 @@ export default function RegisterPage() {
 
       <div className="rg-root">
         {/* Mobile top bar */}
-        <div className="rg-topbar">
+        <div
+          className="rg-topbar"
+          onClick={() => router.push("/")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="rg-topbar-logo">
             <span>INV</span>
           </div>
@@ -267,7 +273,11 @@ export default function RegisterPage() {
           <div className="rg-c2" />
           <div className="rg-grid" />
 
-          <div className="rg-brand">
+          <div
+            className="rg-brand"
+            onClick={() => router.push("/")}
+            style={{ cursor: "pointer" }}
+          >
             <div className="rg-brand-logo">
               <span>INV</span>
             </div>
