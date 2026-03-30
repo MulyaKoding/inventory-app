@@ -30,6 +30,12 @@ export default function LoginPage() {
         return
       }
 
+      // Simpan name & role ke cookie biasa (non-httpOnly) agar bisa dibaca client
+      // token JWT tetap di httpOnly cookie (set oleh server)
+      const maxAge = 60 * 60 * 24 * 7 // 7 hari
+      document.cookie = `user_name=${encodeURIComponent(data.user.name)}; path=/; max-age=${maxAge}; SameSite=Lax`
+      document.cookie = `user_role=${encodeURIComponent(data.user.role)}; path=/; max-age=${maxAge}; SameSite=Lax`
+
       router.push("/inventory")
     } catch (err) {
       setError("Terjadi kesalahan, coba lagi")
@@ -98,19 +104,12 @@ export default function LoginPage() {
           50% { transform: translateY(12px) rotate(-2deg); }
         }
         .lg-error { 
-          background:#fef2f2;
-          border:1px solid #fecaca;
-          color:#dc2626;
-          padding:10px 14px;
-          border-radius:8px;
-          font-size:13px;
-          font-weight:500;
-          margin-bottom:16px;
-          text-align:center;
+          background:#fef2f2;border:1px solid #fecaca;color:#dc2626;
+          padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;
+          margin-bottom:16px;text-align:center;
         }
         .lg-root { display: flex; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
 
-        /* ─── LEFT ─── */
         .lg-left {
           position: relative; width: 48%; min-height: 100vh;
           background: linear-gradient(145deg,#054d42 0%,#087463 40%,#0a9c84 80%,#0fbf9f 100%);
@@ -133,7 +132,6 @@ export default function LoginPage() {
         .lg-stat-val { color:#fff;font-weight:800;font-size:20px;font-family:'DM Mono',monospace;letter-spacing:-.02em; }
         .lg-stat-lbl { color:rgba(255,255,255,.55);font-size:11px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase; }
 
-        /* ─── RIGHT ─── */
         .lg-right { flex:1;display:flex;align-items:center;justify-content:center;padding:48px 32px;background:#fff;overflow-y:auto; }
         .lg-card { width:100%;max-width:400px;animation:fadeUp .5s ease forwards; }
         .lg-head { margin-bottom:36px;text-align:center; }
@@ -173,20 +171,12 @@ export default function LoginPage() {
         .lg-foot { text-align:center;margin-top:24px;font-size:13.5px;color:#64748b; }
         .lg-foot a { color:#087463;font-weight:600;text-decoration:none; }
 
-        /* ─── MOBILE TOPBAR ─── */
-        .lg-topbar {
-          display: none;
-          background: linear-gradient(135deg,#054d42 0%,#087463 100%);
-          padding: 16px 20px;
-          align-items: center;
-          gap: 12px;
-        }
+        .lg-topbar { display:none;background:linear-gradient(135deg,#054d42 0%,#087463 100%);padding:16px 20px;align-items:center;gap:12px; }
         .lg-topbar-logo { width:34px;height:34px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
         .lg-topbar-logo span { color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.05em; }
         .lg-topbar-name { color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em; }
         .lg-topbar-tag { color:rgba(255,255,255,.65);font-size:10px;font-family:'DM Mono',monospace; }
 
-        /* ─── BREAKPOINTS ─── */
         @media (max-width: 768px) {
           .lg-root { flex-direction: column; }
           .lg-left { display: none; }
@@ -196,7 +186,6 @@ export default function LoginPage() {
           .lg-title { font-size: 24px; }
           .lg-head { margin-bottom: 28px; }
         }
-
         @media (max-width: 480px) {
           .lg-right { padding: 24px 16px 40px; }
           .lg-head { margin-bottom: 22px; }
@@ -224,13 +213,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* LEFT — desktop only */}
+        {/* LEFT */}
         <div className="lg-left">
           <div className="lg-overlay" />
           <div className="lg-c1" />
           <div className="lg-c2" />
           <div className="lg-grid" />
-
           <div
             className="lg-brand"
             onClick={() => router.push("/")}
@@ -244,7 +232,6 @@ export default function LoginPage() {
               <p className="lg-brand-tag">Inventory Management System</p>
             </div>
           </div>
-
           <div className="lg-stats">
             {[
               { l: "Products", v: "248" },
@@ -344,7 +331,9 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
             {error && <div className="lg-error">⚠️ {error}</div>}
+
             <button
               className="lg-btn"
               onClick={handleSubmit}
