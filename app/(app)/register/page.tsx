@@ -18,12 +18,39 @@ export default function RegisterPage() {
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
       setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
-  const handleSubmit = (e: React.MouseEvent) => {
+  const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
-  }
 
+    // Validasi password cocok
+    if (form.password !== form.confirm) return
+
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          password: form.password
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error || "Registrasi gagal")
+        return
+      }
+
+      // Berhasil → redirect ke login
+      window.location.href = "/login"
+    } catch (err) {
+      alert("Terjadi kesalahan, coba lagi")
+    } finally {
+      setLoading(false)
+    }
+  }
   const inputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     e.currentTarget.style.borderColor = "#087463"
     e.currentTarget.style.boxShadow = "0 0 0 3px rgba(8,116,99,0.12)"

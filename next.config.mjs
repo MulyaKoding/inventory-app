@@ -7,8 +7,25 @@ const __dirname = path.dirname(__filename)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: [
+    "@prisma/client",
+    "prisma",
+    "./app/generated/prisma",
+    "../generated/prisma"
+  ],
   turbopack: {
-    root: __dirname
+    root: __dirname,
+    resolveExtensions: [".tsx", ".ts", ".jsx", ".js", ".json"]
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [
+        ...(config.externals || []),
+        "@prisma/client",
+        /app\/generated\/prisma/
+      ]
+    }
+    return config
   }
 }
 

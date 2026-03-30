@@ -9,10 +9,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.MouseEvent) => {
+  const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => setLoading(false), 1500)
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error || "Login gagal")
+        return
+      }
+
+      window.location.href = "/"
+    } catch (err) {
+      alert("Terjadi kesalahan, coba lagi")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const inputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
