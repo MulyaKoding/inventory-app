@@ -641,7 +641,7 @@ export default function HomePage() {
       {/* ── NAVBAR ── */}
       <nav className={`hm-nav${scrolled ? " scrolled" : ""}`}>
         <div className="hm-nav-inner">
-          <Link href="/home" className="hm-logo">
+          <Link href="/" className="hm-logo">
             <div className="hm-logo-box">
               <span>INV</span>
             </div>
