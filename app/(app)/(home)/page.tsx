@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import CSChatWidget from "../components/CSChatWidget"
 
 const NAV_LINKS = [
-  { label: "Home", href: "#home" },
+  { label: "Home", href: "/" },
   { label: "Product", href: "product" },
-  { label: "About Us", href: "#about" }
+  { label: "About Us", href: "about" }
 ]
 
 const STATS = [
@@ -1027,6 +1028,7 @@ export default function HomePage() {
           © 2026 STOCKR · Inventory Management System
         </div>
       </footer>
+      <CSChatWidget />
     </>
   )
 }

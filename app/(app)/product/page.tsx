@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import CSChatWidget from "../components/CSChatWidget"
 
 /* ── DATA ── */
 const NAV_LINKS = [
@@ -1157,6 +1158,7 @@ export default function ProductPage() {
         </div>
         <div className="f-sub">© 2026 STOCKR · Inventory Management System</div>
       </footer>
+      <CSChatWidget />
     </>
   )
 }
