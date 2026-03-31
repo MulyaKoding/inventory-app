@@ -342,6 +342,11 @@ export default function HomePage() {
         .hm-hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
         .hm-hamburger.open span:nth-child(2) { opacity: 0; }
         .hm-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        /* Hamburger putih saat hero (belum scroll) */
+        .hm-hamburger span { background: #fff; }
+
+        /* Hamburger hitam saat sudah scroll */
+        .hm-nav.scrolled .hm-hamburger span { background: #0f172a; }
 
         .hm-mobile-menu {
           display: none; position: absolute; top: 68px; left: 0; right: 0;
