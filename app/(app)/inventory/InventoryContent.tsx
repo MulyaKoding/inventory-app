@@ -581,6 +581,24 @@ function SidebarContent({
   isDark: boolean
   T: string
 }) {
+  const [userName, setUserName] = useState("User")
+  const [userRole, setUserRole] = useState("Member")
+
+  useEffect(() => {
+    const getCookie = (name: string) => {
+      if (typeof document === "undefined") return ""
+      const match = document.cookie
+        .split("; ")
+        .find((r) => r.startsWith(`${name}=`))
+      return match ? decodeURIComponent(match.split("=")[1]) : ""
+    }
+    const name = getCookie("user_name")
+    const role = getCookie("user_role")
+    if (name) setUserName(name)
+    if (role) setUserRole(role)
+  }, [])
+
+  const avatarLetter = userName.charAt(0).toUpperCase()
   return (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <Box
@@ -661,16 +679,22 @@ function SidebarContent({
           <Avatar
             sx={{ width: 32, height: 32, bgcolor: "#FF6B35", fontSize: 12 }}
           >
-            R
+            {avatarLetter}
           </Avatar>
           <Box>
             <Typography
               sx={{ color: p.textPrimary, fontSize: 12, fontWeight: 600 }}
             >
-              Raaaamad
+              {userName.length > 14 ? userName.slice(0, 14) + "…" : userName}
             </Typography>
-            <Typography sx={{ color: p.textMuted, fontSize: 10 }}>
-              Admin
+            <Typography
+              sx={{
+                color: p.textMuted,
+                fontSize: 10,
+                textTransform: "capitalize"
+              }}
+            >
+              {userRole}
             </Typography>
           </Box>
         </Box>
