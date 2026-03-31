@@ -7,7 +7,7 @@ import CSChatWidget from "../components/CSChatWidget"
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Product", href: "/product" },
-  { label: "About Us", href: "/#about" }
+  { label: "About Us", href: "/about" }
 ]
 
 const TEAM = [
