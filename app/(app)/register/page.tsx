@@ -32,7 +32,6 @@ export default function RegisterPage() {
       setError("Password minimal 8 karakter")
       return
     }
-
     setLoading(true)
     setError("")
     try {
@@ -45,371 +44,425 @@ export default function RegisterPage() {
           password: form.password
         })
       })
-
       const data = await res.json()
-
       if (!res.ok) {
         setError(data.error || "Registrasi gagal")
         return
       }
-
       setSuccess("Registrasi berhasil! Mengarahkan ke halaman login...")
       setTimeout(() => {
         window.location.href = "/login"
       }, 1500)
-    } catch (err) {
+    } catch {
       setError("Terjadi kesalahan, coba lagi")
     } finally {
       setLoading(false)
     }
   }
-  const inputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = "#087463"
-    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(8,116,99,0.12)"
-  }
-  const inputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = "#e2e8f0"
-    e.currentTarget.style.boxShadow = "none"
-  }
-
-  const EyeOpen = () => (
-    <svg
-      viewBox="0 0 24 24"
-      width="16"
-      height="16"
-      fill="none"
-      stroke="#94a3b8"
-      strokeWidth="1.8"
-    >
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  )
-  const EyeOff = () => (
-    <svg
-      viewBox="0 0 24 24"
-      width="16"
-      height="16"
-      fill="none"
-      stroke="#94a3b8"
-      strokeWidth="1.8"
-    >
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  )
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        @keyframes dotBounce {
-          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-          40% { transform: translateY(-6px); opacity: 1; }
-        }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes floatL {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-18px) rotate(3deg); }
+        @keyframes dotBounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+          40% { transform: translateY(-5px); opacity: 1; }
         }
-        @keyframes floatR {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(12px) rotate(-2deg); }
+        @keyframes pulse-ring {
+          0% { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(1.7); opacity: 0; }
+        }
+        @keyframes gridPan {
+          from { background-position: 0 0; }
+          to { background-position: 48px 48px; }
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-10px); }
+          to { opacity: 1; transform: translateX(0); }
         }
 
-        .rg-root { display: flex; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
-        .rg-error { 
-          background:#fef2f2;
-          border:1px solid #fecaca;
-          color:#dc2626;
-          padding:10px 14px;
-          border-radius:8px;
-          font-size:13px;
-          font-weight:500;
-          margin-bottom:16px;
-          text-align:center;
-        }
-        .rg-success { 
-          background:#f0fdf4;
-          border:1px solid #bbf7d0;
-          color:#16a34a;
-          padding:10px 14px;
-          border-radius:8px;
-          font-size:13px;
-          font-weight:500;
-          margin-bottom:16px;
-          text-align:center;
-        }
-        /* ─── LEFT ─── */
+        .rg-root { display: flex; min-height: 100vh; font-family: 'Nunito', sans-serif; }
+
+        /* ── LEFT ── */
         .rg-left {
-          position: relative; width: 48%; min-height: 100vh;
-          background: linear-gradient(145deg,#054d42 0%,#087463 40%,#0a9c84 80%,#0fbf9f 100%);
-          overflow: hidden; display: flex; flex-direction: column;
-          justify-content: space-between; padding: 48px;
+          position: relative; width: 52%; min-height: 100vh;
+          background: linear-gradient(160deg, #060b1a 0%, #0c1733 30%, #0f2050 60%, #1e3a8a 100%);
+          display: flex; flex-direction: column; overflow: hidden;
         }
-        .rg-overlay { position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(0,0,0,.15) 0%,transparent 60%);pointer-events:none; }
-        .rg-c1 { position:absolute;top:-80px;right:-80px;width:320px;height:320px;border-radius:50%;border:1px solid rgba(255,255,255,.15);animation:floatL 7s ease-in-out infinite;pointer-events:none; }
-        .rg-c2 { position:absolute;bottom:80px;left:-60px;width:240px;height:240px;border-radius:50%;border:1px solid rgba(255,255,255,.1);animation:floatR 9s ease-in-out infinite;pointer-events:none; }
-        .rg-grid { position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none; }
+        .rg-left-grid {
+          position: absolute; inset: 0; pointer-events: none;
+          background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+          background-size: 48px 48px; animation: gridPan 8s linear infinite;
+        }
+        .rg-left-glow {
+          position: absolute; top: -100px; right: -100px;
+          width: 450px; height: 450px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(59,130,246,.22) 0%, transparent 70%);
+          pointer-events: none;
+        }
+        .rg-left-glow2 {
+          position: absolute; bottom: -80px; left: -80px;
+          width: 380px; height: 380px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(30,58,138,.18) 0%, transparent 70%);
+          pointer-events: none;
+        }
 
-        .rg-brand { position:relative;z-index:1;display:flex;align-items:center;gap:16px; }
-        .rg-brand-logo { width:48px;height:48px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-        .rg-brand-logo span { color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:14px;letter-spacing:.05em; }
-        .rg-brand-name { color:#fff;font-weight:800;font-size:18px;letter-spacing:.08em;line-height:1.2; }
-        .rg-brand-tag { color:rgba(255,255,255,.6);font-size:12px;font-family:'DM Mono',monospace;letter-spacing:.03em;margin-top:2px; }
+        /* Brand */
+        .rg-brand-area {
+          position: relative; z-index: 2; padding: 48px 52px 0;
+          display: flex; align-items: center; gap: 12px; cursor: pointer;
+        }
+        .rg-brand-mark {
+          width: 40px; height: 40px;
+          background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+          border-radius: 9px; display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; box-shadow: 0 4px 12px rgba(59,130,246,.35);
+        }
+        .rg-brand-mark span { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 11px; color: #fff; }
+        .rg-brand-name { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: .06em; }
+        .rg-brand-sub { font-size: 11px; color: rgba(255,255,255,.4); font-family: 'Nunito', sans-serif; font-weight: 600; margin-top: 2px; }
 
-        .rg-center { position:relative;z-index:1;display:flex;flex-direction:column;gap:14px; }
-        .rg-center-title { color:#fff;font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.25; }
-        .rg-center-desc { color:rgba(255,255,255,.65);font-size:13px;line-height:1.7;max-width:300px; }
-        .rg-features { display:flex;flex-direction:column;gap:10px;margin-top:4px; }
-        .rg-feat { display:flex;align-items:center;gap:10px; }
-        .rg-feat-dot { width:6px;height:6px;border-radius:50%;background:#0fbf9f;flex-shrink:0; }
-        .rg-feat-text { color:rgba(255,255,255,.75);font-size:13px;font-family:'DM Mono',monospace; }
+        /* Hero */
+        .rg-hero { position: relative; z-index: 2; padding: 48px 52px 0; flex: 1; }
+        .rg-hero-tag {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,.08); backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,.15); border-radius: 100px;
+          padding: 6px 14px; margin-bottom: 24px;
+        }
+        .rg-hero-tag-dot { width: 6px; height: 6px; border-radius: 50%; background: #60a5fa; position: relative; }
+        .rg-hero-tag-dot::after {
+          content: ''; position: absolute; inset: -3px; border-radius: 50%;
+          background: rgba(96,165,250,.4); animation: pulse-ring 1.8s ease-out infinite;
+        }
+        .rg-hero-tag-text { color: rgba(255,255,255,.85); font-size: 11px; font-family: 'Nunito', sans-serif; font-weight: 800; letter-spacing: .05em; }
+        .rg-hero-title {
+          font-family: 'Nunito', sans-serif; font-weight: 900;
+          font-size: clamp(28px, 3vw, 42px); line-height: 1.1; letter-spacing: -.02em;
+          color: #fff; margin-bottom: 14px;
+        }
+        .rg-hero-title em { font-style: normal; color: #60a5fa; }
+        .rg-hero-desc {
+          font-size: 14px; color: rgba(255,255,255,.6); line-height: 1.7;
+          max-width: 360px; font-family: 'Nunito', sans-serif; font-weight: 500;
+          margin-bottom: 32px;
+        }
 
-        .rg-stats { position:relative;z-index:1;display:flex;gap:28px;padding:20px 24px;background:rgba(0,0,0,.15);backdrop-filter:blur(12px);border-radius:12px;border:1px solid rgba(255,255,255,.1); }
-        .rg-stat { display:flex;flex-direction:column;gap:4px; }
-        .rg-stat-val { color:#fff;font-weight:800;font-size:18px;font-family:'DM Mono',monospace;letter-spacing:-.02em; }
-        .rg-stat-lbl { color:rgba(255,255,255,.55);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.06em;text-transform:uppercase; }
+        /* Visual mock */
+        .rg-visual {
+          border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+          overflow: hidden; background: rgba(0,0,0,.2); margin-bottom: 28px;
+        }
+        .rg-visual-header {
+          padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,.07);
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(0,0,0,.15);
+        }
+        .rg-visual-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .rg-visual-title { font-size: 11px; color: rgba(255,255,255,.3); font-family: 'Nunito', sans-serif; font-weight: 700; margin-left: 4px; letter-spacing: .04em; }
+        .rg-visual-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .rg-visual-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 10px 14px; background: rgba(255,255,255,.04);
+          border-radius: 8px; border: 1px solid rgba(255,255,255,.06);
+          animation: slideIn .4s ease forwards;
+        }
+        .rg-visual-row-left { display: flex; align-items: center; gap: 10px; }
+        .rg-visual-row-ico { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .rg-visual-row-name { font-size: 13px; color: rgba(255,255,255,.65); font-family: 'Nunito', sans-serif; font-weight: 700; }
+        .rg-visual-row-stock { font-size: 11px; color: rgba(255,255,255,.25); font-family: 'Nunito', sans-serif; font-weight: 600; }
+        .rg-visual-badge { font-size: 11px; font-family: 'Nunito', sans-serif; font-weight: 800; padding: 3px 10px; border-radius: 100px; }
+        .rg-visual-badge.ok { background: rgba(29,78,216,.15); color: #93c5fd; }
+        .rg-visual-badge.warn { background: rgba(245,158,11,.12); color: #fde68a; }
+        .rg-visual-badge.low { background: rgba(239,68,68,.12); color: #fca5a5; }
 
-        /* ─── RIGHT ─── */
-        .rg-right { flex:1;display:flex;align-items:center;justify-content:center;padding:48px 32px;background:#fff;overflow-y:auto; }
-        .rg-card { width:100%;max-width:400px;animation:fadeUp .5s ease forwards; }
-        .rg-head { margin-bottom:28px;text-align:center; }
-        .rg-head-logo { width:40px;height:40px;background:#087463;border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px; }
-        .rg-head-logo span { color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:12px;letter-spacing:.05em; }
-        .rg-title { font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-.03em;line-height:1.2;margin-bottom:6px; }
-        .rg-subtitle { font-size:13.5px;color:#64748b;line-height:1.5; }
+        /* Steps */
+        .rg-steps { display: flex; flex-direction: column; gap: 10px; }
+        .rg-step { display: flex; align-items: flex-start; gap: 14px; }
+        .rg-step-num {
+          width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+          background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 11px; font-family: 'Nunito', sans-serif; font-weight: 900;
+          color: #93c5fd; margin-top: 2px;
+        }
+        .rg-step-text { font-size: 13px; color: rgba(255,255,255,.5); font-family: 'Nunito', sans-serif; font-weight: 600; line-height: 1.5; }
+        .rg-step-text strong { color: rgba(255,255,255,.8); font-weight: 800; }
 
-        .rg-field { margin-bottom:14px; }
-        .rg-lbl { display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:7px;letter-spacing:.01em; }
-        .rg-wrap { position:relative;display:flex;align-items:center; }
-        .rg-icon { position:absolute;left:14px;width:16px;height:16px;pointer-events:none;z-index:1; }
+        /* Bottom */
+        .rg-bottom-bar {
+          position: relative; z-index: 2; padding: 22px 52px;
+          border-top: 1px solid rgba(255,255,255,.07);
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .rg-bottom-trust { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,.35); font-family: 'Nunito', sans-serif; font-weight: 700; }
+        .rg-bottom-trust-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+        .rg-bottom-version { font-size: 11px; color: rgba(255,255,255,.2); font-family: 'Nunito', sans-serif; font-weight: 700; }
+
+        /* ── RIGHT — WHITE ── */
+        .rg-right {
+          flex: 1; display: flex; align-items: center; justify-content: center;
+          padding: 40px 40px; background: #fff; overflow-y: auto;
+        }
+        .rg-card { width: 100%; max-width: 400px; animation: fadeUp .5s ease forwards; }
+
+        .rg-form-head { margin-bottom: 28px; }
+        .rg-form-logo {
+          width: 44px; height: 44px;
+          background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+          border-radius: 10px; display: flex; align-items: center; justify-content: center;
+          margin-bottom: 18px; box-shadow: 0 6px 20px rgba(59,130,246,.25);
+        }
+        .rg-form-logo span { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 12px; color: #fff; }
+        .rg-form-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 28px; color: #0f172a; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 6px; }
+        .rg-form-sub { font-size: 14px; color: #64748b; font-family: 'Nunito', sans-serif; font-weight: 500; line-height: 1.5; }
+
+        /* Fields */
+        .rg-field { margin-bottom: 14px; }
+        .rg-lbl { display: block; font-size: 13px; font-weight: 700; color: #374151; font-family: 'Nunito', sans-serif; margin-bottom: 7px; }
+        .rg-inp-wrap { position: relative; display: flex; align-items: center; }
+        .rg-inp-icon { position: absolute; left: 14px; width: 16px; height: 16px; pointer-events: none; z-index: 1; color: #94a3b8; }
         .rg-inp {
-          width:100%;height:46px;padding:0 44px;
-          border:1.5px solid #e2e8f0;border-radius:10px;
-          font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;
-          color:#0f172a;background:#f8fafc;outline:none;
-          transition:border-color .2s,box-shadow .2s;
+          width: 100%; height: 48px; padding: 0 44px;
+          background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
+          font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600;
+          color: #0f172a; outline: none;
+          transition: border-color .2s, box-shadow .2s, background .2s;
         }
-        .rg-eye { position:absolute;right:14px;background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center; }
-        .rg-err { color:#ef4444;font-size:11.5px;margin-top:5px;font-weight:500; }
+        .rg-inp::placeholder { color: #cbd5e1; font-weight: 500; }
+        .rg-inp:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+        .rg-inp-eye { position: absolute; right: 14px; background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #94a3b8; transition: color .2s; }
+        .rg-inp-eye:hover { color: #475569; }
+        .rg-field-err { font-size: 12px; color: #dc2626; margin-top: 5px; font-weight: 700; font-family: 'Nunito', sans-serif; }
+
+        /* Strength */
+        .rg-strength { display: flex; gap: 4px; margin-top: 7px; }
+        .rg-strength-bar { flex: 1; height: 3px; border-radius: 2px; background: #e2e8f0; transition: background .3s; }
+
+        .rg-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'Nunito', sans-serif; margin-bottom: 14px; text-align: center; }
+        .rg-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'Nunito', sans-serif; margin-bottom: 14px; text-align: center; }
 
         .rg-btn {
-          width:100%;height:50px;background:#087463;color:#fff;border:none;border-radius:10px;
-          font-size:15px;font-weight:700;letter-spacing:.02em;cursor:pointer;
-          transition:background .2s;margin-top:8px;
-          display:flex;align-items:center;justify-content:center;gap:8px;
-          font-family:'Plus Jakarta Sans',sans-serif;
+          width: 100%; height: 50px;
+          background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+          color: #fff; border: none; border-radius: 10px;
+          font-size: 15px; font-weight: 800; letter-spacing: .02em; cursor: pointer;
+          font-family: 'Nunito', sans-serif;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          box-shadow: 0 8px 24px rgba(59,130,246,.3);
+          transition: transform .2s, box-shadow .2s; margin-top: 6px;
         }
-        .rg-btn:hover:not(:disabled) { background:#065a4d; }
-        .rg-btn:disabled { opacity:.8;cursor:not-allowed; }
+        .rg-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59,130,246,.4); }
+        .rg-btn:disabled { opacity: .7; cursor: not-allowed; }
 
-        .rg-dots { display:flex;gap:6px;align-items:center; }
-        .rg-dot { width:7px;height:7px;border-radius:50%;background:#fff;animation:dotBounce 1s ease-in-out infinite;display:inline-block; }
+        .rg-dots { display: flex; gap: 5px; align-items: center; }
+        .rg-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: dotBounce 1s ease-in-out infinite; }
 
-        .rg-foot { text-align:center;margin-top:20px;font-size:13.5px;color:#64748b; }
-        .rg-foot a { color:#087463;font-weight:600;text-decoration:none; }
+        .rg-foot { text-align: center; margin-top: 20px; font-size: 13px; color: #64748b; font-family: 'Nunito', sans-serif; font-weight: 600; }
+        .rg-foot a { color: #1e3a8a; text-decoration: none; font-weight: 800; }
+        .rg-foot a:hover { color: #3b82f6; }
 
-        /* ─── MOBILE TOPBAR (hidden on desktop) ─── */
-        .rg-topbar {
-          display:none;
-          background:linear-gradient(135deg,#054d42 0%,#087463 100%);
-          padding:16px 20px;
-          align-items:center;
-          gap:12px;
-        }
-        .rg-topbar-logo { width:34px;height:34px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-        .rg-topbar-logo span { color:#fff;font-family:'DM Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.05em; }
-        .rg-topbar-name { color:#fff;font-weight:800;font-size:15px;letter-spacing:.06em; }
-        .rg-topbar-tag { color:rgba(255,255,255,.65);font-size:10px;font-family:'DM Mono',monospace; }
+        .rg-terms { text-align: center; margin-top: 12px; font-size: 12px; color: #94a3b8; font-family: 'Nunito', sans-serif; font-weight: 600; }
+        .rg-terms a { color: #1e3a8a; text-decoration: none; }
 
-        /* ─── BREAKPOINTS ─── */
-        @media (max-width: 768px) {
-          .rg-root { flex-direction: column; }
+        /* Mobile */
+        .rg-topbar { display: none; background: linear-gradient(135deg, #060b1a, #1e3a8a); padding: 14px 20px; align-items: center; gap: 12px; cursor: pointer; }
+        .rg-topbar-mark { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .rg-topbar-mark span { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 10px; color: #fff; }
+        .rg-topbar-name { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 15px; color: #fff; }
+        .rg-topbar-sub { font-size: 10px; color: rgba(255,255,255,.4); font-family: 'Nunito', sans-serif; font-weight: 600; }
+
+        @media (max-width: 900px) {
           .rg-left { display: none; }
           .rg-topbar { display: flex; }
-          .rg-right { padding: 28px 20px 48px; align-items: flex-start; }
+          .rg-root { flex-direction: column; }
+          .rg-right { padding: 32px 20px 48px; align-items: flex-start; }
           .rg-card { max-width: 100%; }
-          .rg-title { font-size: 22px; }
         }
-
         @media (max-width: 480px) {
           .rg-right { padding: 24px 16px 40px; }
-          .rg-head { margin-bottom: 20px; }
-          .rg-title { font-size: 20px; }
-          .rg-inp { height: 44px; font-size: 13px; }
-          .rg-btn { height: 48px; font-size: 14px; }
+          .rg-form-title { font-size: 24px; }
+          .rg-inp { height: 44px; }
+          .rg-btn { height: 48px; }
           .rg-field { margin-bottom: 12px; }
-          .rg-topbar { padding: 14px 16px; }
         }
       `}</style>
 
       <div className="rg-root">
-        {/* Mobile top bar */}
-        <div
-          className="rg-topbar"
-          onClick={() => router.push("/")}
-          style={{ cursor: "pointer" }}
-        >
-          <div className="rg-topbar-logo">
+        <div className="rg-topbar" onClick={() => router.push("/")}>
+          <div className="rg-topbar-mark">
             <span>INV</span>
           </div>
           <div>
             <div className="rg-topbar-name">STOCKR</div>
-            <div className="rg-topbar-tag">Inventory Management System</div>
+            <div className="rg-topbar-sub">Inventory Management System</div>
           </div>
         </div>
 
-        {/* LEFT — desktop only */}
+        {/* LEFT */}
         <div className="rg-left">
-          <div className="rg-overlay" />
-          <div className="rg-c1" />
-          <div className="rg-c2" />
-          <div className="rg-grid" />
-
-          <div
-            className="rg-brand"
-            onClick={() => router.push("/")}
-            style={{ cursor: "pointer" }}
-          >
-            <div className="rg-brand-logo">
+          <div className="rg-left-grid" />
+          <div className="rg-left-glow" />
+          <div className="rg-left-glow2" />
+          <div className="rg-brand-area" onClick={() => router.push("/")}>
+            <div className="rg-brand-mark">
               <span>INV</span>
             </div>
             <div>
-              <p className="rg-brand-name">STOCKR</p>
-              <p className="rg-brand-tag">Inventory Management System</p>
+              <div className="rg-brand-name">STOCKR</div>
+              <div className="rg-brand-sub">Inventory Management System</div>
             </div>
           </div>
-
-          <div className="rg-center">
-            <svg viewBox="0 0 120 120" width="72" height="72" fill="none">
-              <rect
-                x="10"
-                y="30"
-                width="100"
-                height="70"
-                rx="8"
-                fill="rgba(255,255,255,0.12)"
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth="1.5"
-              />
-              <rect
-                x="25"
-                y="20"
-                width="70"
-                height="20"
-                rx="6"
-                fill="rgba(255,255,255,0.18)"
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth="1.5"
-              />
-              <line
-                x1="25"
-                y1="55"
-                x2="95"
-                y2="55"
-                stroke="rgba(255,255,255,0.25)"
-                strokeWidth="1.5"
-              />
-              <line
-                x1="25"
-                y1="70"
-                x2="75"
-                y2="70"
-                stroke="rgba(255,255,255,0.18)"
-                strokeWidth="1.5"
-              />
-              <line
-                x1="25"
-                y1="83"
-                x2="60"
-                y2="83"
-                stroke="rgba(255,255,255,0.12)"
-                strokeWidth="1.5"
-              />
-              <circle
-                cx="88"
-                cy="88"
-                r="18"
-                fill="rgba(15,191,159,0.3)"
-                stroke="rgba(255,255,255,0.4)"
-                strokeWidth="1.5"
-              />
-              <path
-                d="M80 88 L86 94 L96 82"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <h2 className="rg-center-title">Mulai Kelola Inventori</h2>
-            <p className="rg-center-desc">
-              Buat akun gratis dan mulai pantau stok, pesanan, dan pendapatan
-              bisnis kamu dari satu dasbor.
+          <div className="rg-hero">
+            <div className="rg-hero-tag">
+              <span className="rg-hero-tag-dot" />
+              <span className="rg-hero-tag-text">Gratis Selamanya</span>
+            </div>
+            <h1 className="rg-hero-title">
+              Mulai Kelola
+              <br />
+              <em>Inventori Kamu.</em>
+            </h1>
+            <p className="rg-hero-desc">
+              Buat akun gratis dan langsung akses semua fitur manajemen stok,
+              pesanan, dan laporan bisnis.
             </p>
-            <div className="rg-features">
+
+            {/* Visual mock */}
+            <div className="rg-visual">
+              <div className="rg-visual-header">
+                <span
+                  className="rg-visual-dot"
+                  style={{ background: "#ef4444" }}
+                />
+                <span
+                  className="rg-visual-dot"
+                  style={{ background: "#f59e0b" }}
+                />
+                <span
+                  className="rg-visual-dot"
+                  style={{ background: "#22c55e" }}
+                />
+                <span className="rg-visual-title">stockr / inventory</span>
+              </div>
+              <div className="rg-visual-body">
+                {[
+                  {
+                    ico: "📦",
+                    name: "Kaos Polos Putih",
+                    stock: "124 pcs",
+                    status: "ok",
+                    badge: "In Stock"
+                  },
+                  {
+                    ico: "👟",
+                    name: "Sepatu Running X9",
+                    stock: "8 pcs",
+                    status: "warn",
+                    badge: "Low Stock"
+                  },
+                  {
+                    ico: "🎒",
+                    name: "Tas Ransel Urban",
+                    stock: "0 pcs",
+                    status: "low",
+                    badge: "Habis"
+                  }
+                ].map((r, i) => (
+                  <div
+                    key={r.name}
+                    className="rg-visual-row"
+                    style={{ animationDelay: `${i * 0.1}s` }}
+                  >
+                    <div className="rg-visual-row-left">
+                      <div className="rg-visual-row-ico">{r.ico}</div>
+                      <div>
+                        <div className="rg-visual-row-name">{r.name}</div>
+                        <div className="rg-visual-row-stock">{r.stock}</div>
+                      </div>
+                    </div>
+                    <span className={`rg-visual-badge ${r.status}`}>
+                      {r.badge}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Steps */}
+            <div className="rg-steps">
               {[
-                "Manajemen produk & kategori",
-                "Laporan penjualan real-time",
-                "Notifikasi stok menipis"
-              ].map((f) => (
-                <div key={f} className="rg-feat">
-                  <div className="rg-feat-dot" />
-                  <span className="rg-feat-text">{f}</span>
+                {
+                  n: "01",
+                  t: (
+                    <>
+                      Daftar gratis dalam <strong>2 menit</strong>
+                    </>
+                  )
+                },
+                {
+                  n: "02",
+                  t: (
+                    <>
+                      Tambah produk & <strong>atur stok</strong> kamu
+                    </>
+                  )
+                },
+                {
+                  n: "03",
+                  t: (
+                    <>
+                      <strong>Monitor & analisis</strong> semua dari dasbor
+                    </>
+                  )
+                }
+              ].map((s) => (
+                <div key={s.n} className="rg-step">
+                  <div className="rg-step-num">{s.n}</div>
+                  <div className="rg-step-text">{s.t}</div>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="rg-stats">
-            {[
-              { l: "Products", v: "248" },
-              { l: "Orders Today", v: "63" },
-              { l: "Revenue", v: "Rp 48.2M" }
-            ].map((s) => (
-              <div key={s.l} className="rg-stat">
-                <span className="rg-stat-val">{s.v}</span>
-                <span className="rg-stat-lbl">{s.l}</span>
-              </div>
-            ))}
+          <div className="rg-bottom-bar">
+            <div className="rg-bottom-trust">
+              <span className="rg-bottom-trust-dot" />
+              Gratis, tanpa kartu kredit
+            </div>
+            <span className="rg-bottom-version">v2.4.1 · 2026</span>
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT — WHITE */}
         <div className="rg-right">
           <div className="rg-card">
-            <div className="rg-head">
-              <div className="rg-head-logo">
-                <span>INV</span>
-              </div>
-              <h1 className="rg-title">Buat Akun Baru</h1>
-              <p className="rg-subtitle">
-                Isi data berikut untuk mulai menggunakan STOCKR
+            <div className="rg-form-head">
+              <h1 className="rg-form-title">Buat Akun</h1>
+              <p className="rg-form-sub">
+                Isi data di bawah untuk mulai menggunakan platform.
               </p>
             </div>
 
             {/* Name */}
             <div className="rg-field">
               <label className="rg-lbl">Nama Lengkap</label>
-              <div className="rg-wrap">
+              <div className="rg-inp-wrap">
                 <svg
-                  className="rg-icon"
+                  className="rg-inp-icon"
                   viewBox="0 0 24 24"
                   fill="none"
-                  strokeWidth="1.8"
+                  strokeWidth="2"
+                  stroke="currentColor"
                 >
-                  <path
-                    d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
-                    stroke="#94a3b8"
-                  />
-                  <circle cx="12" cy="7" r="4" stroke="#94a3b8" />
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
                 </svg>
                 <input
                   className="rg-inp"
@@ -417,8 +470,6 @@ export default function RegisterPage() {
                   placeholder="Nama kamu"
                   value={form.name}
                   onChange={handleChange("name")}
-                  onFocus={inputFocus}
-                  onBlur={inputBlur}
                 />
               </div>
             </div>
@@ -426,18 +477,16 @@ export default function RegisterPage() {
             {/* Email */}
             <div className="rg-field">
               <label className="rg-lbl">Email</label>
-              <div className="rg-wrap">
+              <div className="rg-inp-wrap">
                 <svg
-                  className="rg-icon"
+                  className="rg-inp-icon"
                   viewBox="0 0 24 24"
                   fill="none"
-                  strokeWidth="1.8"
+                  strokeWidth="2"
+                  stroke="currentColor"
                 >
-                  <path
-                    d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                    stroke="#94a3b8"
-                  />
-                  <polyline points="22,6 12,13 2,6" stroke="#94a3b8" />
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
                 </svg>
                 <input
                   className="rg-inp"
@@ -445,8 +494,6 @@ export default function RegisterPage() {
                   placeholder="nama@email.com"
                   value={form.email}
                   onChange={handleChange("email")}
-                  onFocus={inputFocus}
-                  onBlur={inputBlur}
                 />
               </div>
             </div>
@@ -454,23 +501,16 @@ export default function RegisterPage() {
             {/* Password */}
             <div className="rg-field">
               <label className="rg-lbl">Password</label>
-              <div className="rg-wrap">
+              <div className="rg-inp-wrap">
                 <svg
-                  className="rg-icon"
+                  className="rg-inp-icon"
                   viewBox="0 0 24 24"
                   fill="none"
-                  strokeWidth="1.8"
+                  strokeWidth="2"
+                  stroke="currentColor"
                 >
-                  <rect
-                    x="3"
-                    y="11"
-                    width="18"
-                    height="11"
-                    rx="2"
-                    ry="2"
-                    stroke="#94a3b8"
-                  />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#94a3b8" />
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
                 <input
                   className="rg-inp"
@@ -478,33 +518,80 @@ export default function RegisterPage() {
                   placeholder="Min. 8 karakter"
                   value={form.password}
                   onChange={handleChange("password")}
-                  onFocus={inputFocus}
-                  onBlur={inputBlur}
                 />
                 <button
                   type="button"
-                  className="rg-eye"
+                  className="rg-inp-eye"
                   onClick={() => setShowPassword((v) => !v)}
                 >
-                  {showPassword ? <EyeOff /> : <EyeOpen />}
+                  {showPassword ? (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                 </button>
+              </div>
+              {/* Strength bars */}
+              <div className="rg-strength">
+                {[0, 1, 2, 3].map((i) => {
+                  const len = form.password.length
+                  const active =
+                    len === 0
+                      ? -1
+                      : len < 6
+                        ? 0
+                        : len < 8
+                          ? 1
+                          : len < 12
+                            ? 2
+                            : 3
+                  const colors = ["#ef4444", "#f59e0b", "#3b82f6", "#22c55e"]
+                  return (
+                    <div
+                      key={i}
+                      className="rg-strength-bar"
+                      style={{
+                        background: i <= active ? colors[active] : undefined
+                      }}
+                    />
+                  )
+                })}
               </div>
             </div>
 
             {/* Confirm */}
             <div className="rg-field">
               <label className="rg-lbl">Konfirmasi Password</label>
-              <div className="rg-wrap">
+              <div className="rg-inp-wrap">
                 <svg
-                  className="rg-icon"
+                  className="rg-inp-icon"
                   viewBox="0 0 24 24"
                   fill="none"
-                  strokeWidth="1.8"
+                  strokeWidth="2"
+                  stroke="currentColor"
                 >
-                  <path
-                    d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
-                    stroke="#94a3b8"
-                  />
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
                 <input
                   className="rg-inp"
@@ -512,8 +599,6 @@ export default function RegisterPage() {
                   placeholder="Ulangi password"
                   value={form.confirm}
                   onChange={handleChange("confirm")}
-                  onFocus={inputFocus}
-                  onBlur={inputBlur}
                   style={{
                     borderColor:
                       form.confirm && form.password !== form.confirm
@@ -523,18 +608,45 @@ export default function RegisterPage() {
                 />
                 <button
                   type="button"
-                  className="rg-eye"
+                  className="rg-inp-eye"
                   onClick={() => setShowConfirm((v) => !v)}
                 >
-                  {showConfirm ? <EyeOff /> : <EyeOpen />}
+                  {showConfirm ? (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                 </button>
               </div>
               {form.confirm && form.password !== form.confirm && (
-                <p className="rg-err">Password tidak cocok</p>
+                <p className="rg-field-err">Password tidak cocok</p>
               )}
             </div>
-            {error && <div className="rg-error">⚠️ {error}</div>}
-            {success && <div className="rg-success">✅ {success}</div>}
+
+            {error && <div className="rg-error">⚠ {error}</div>}
+            {success && <div className="rg-success">✓ {success}</div>}
+
             <button
               className="rg-btn"
               onClick={handleSubmit}
@@ -550,12 +662,16 @@ export default function RegisterPage() {
                   <span className="rg-dot" style={{ animationDelay: "0.3s" }} />
                 </span>
               ) : (
-                "Daftar Sekarang"
+                "Buat Akun Sekarang"
               )}
             </button>
 
             <p className="rg-foot">
               Sudah punya akun? <Link href="/login">Masuk di sini</Link>
+            </p>
+            <p className="rg-terms">
+              Dengan mendaftar kamu menyetujui{" "}
+              <a href="#">Syarat & Ketentuan</a> kami
             </p>
           </div>
         </div>

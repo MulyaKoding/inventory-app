@@ -64,8 +64,8 @@ export function ThemeToggle({
         sx={{
           width: 56,
           height: 28,
-          bgcolor: isDark ? "#1a1a1a" : "#e2e8f0",
-          border: isDark ? "1px solid #2a2a2a" : "1px solid #cbd5e1",
+          bgcolor: isDark ? "#0c1733" : "#e2e8f0",
+          border: isDark ? "1px solid #1e3a8a" : "1px solid #cbd5e1",
           borderRadius: "14px",
           display: "flex",
           alignItems: "center",
@@ -77,19 +77,22 @@ export function ThemeToggle({
           "&:hover": { opacity: 0.85 }
         }}
       >
+        {/* Moon icon on the left (visible in dark mode) */}
         <Box
           sx={{
             position: "absolute",
             left: 7,
-            opacity: isDark ? 0.5 : 0,
+            opacity: isDark ? 0.6 : 0,
             transition: "opacity 0.3s",
             display: "flex",
             alignItems: "center",
             pointerEvents: "none"
           }}
         >
-          <MoonIcon size={11} color="#94a3b8" />
+          <MoonIcon size={11} color="#60a5fa" />
         </Box>
+
+        {/* Sun icon on the right (visible in light mode) */}
         <Box
           sx={{
             position: "absolute",
@@ -103,28 +106,30 @@ export function ThemeToggle({
         >
           <SunIcon size={11} color="#64748b" />
         </Box>
+
+        {/* Sliding knob */}
         <Box
           sx={{
             width: 22,
             height: 22,
             borderRadius: "50%",
-            bgcolor: isDark ? "#087463" : "#1e293b",
+            bgcolor: isDark ? "#3b82f6" : "#1e3a8a",
             transform: isDark ? "translateX(28px)" : "translateX(0px)",
             transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             boxShadow: isDark
-              ? "0 0 8px rgba(232,255,71,0.4)"
+              ? "0 0 8px rgba(59,130,246,0.5)"
               : "0 1px 4px rgba(0,0,0,0.25)",
             zIndex: 1,
             pointerEvents: "none"
           }}
         >
           {isDark ? (
-            <MoonIcon size={11} color="#0D0D0D" />
+            <MoonIcon size={11} color="#fff" />
           ) : (
-            <SunIcon size={11} color="#087463" />
+            <SunIcon size={11} color="#93c5fd" />
           )}
         </Box>
       </Box>

@@ -32,10 +32,9 @@ export default function CSChatWidget({
   const [showBubble, setShowBubble] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
 
-  // Drag state
-  const [pos, setPos] = useState({ x: 28, y: 28 }) // distance from bottom-right
+  const [pos, setPos] = useState({ x: 28, y: 28 })
   const [isDragging, setIsDragging] = useState(false)
-  const [dragged, setDragged] = useState(false) // true if mouse actually moved during press
+  const [dragged, setDragged] = useState(false)
   const dragStart = useRef<{
     mouseX: number
     mouseY: number
@@ -45,13 +44,11 @@ export default function CSChatWidget({
   const fabRef = useRef<HTMLButtonElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  // Show greeting bubble after 3s
   useEffect(() => {
     const t = setTimeout(() => setShowBubble(true), 3000)
     return () => clearTimeout(t)
   }, [])
 
-  // Auto hide bubble after 8s
   useEffect(() => {
     if (showBubble) {
       const t = setTimeout(() => setShowBubble(false), 8000)
@@ -59,7 +56,6 @@ export default function CSChatWidget({
     }
   }, [showBubble])
 
-  // Check online hours
   useEffect(() => {
     const now = new Date()
     const day = now.getDay()
@@ -67,7 +63,6 @@ export default function CSChatWidget({
     setIsOnline(day >= 1 && day <= 5 && hour >= 8 && hour < 17)
   }, [])
 
-  // Close panel on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -78,7 +73,6 @@ export default function CSChatWidget({
     return () => document.removeEventListener("mousedown", handler)
   }, [open])
 
-  // ── DRAG LOGIC ──
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault()
@@ -100,23 +94,12 @@ export default function CSChatWidget({
       if (!isDragging || !dragStart.current) return
       const dx = e.clientX - dragStart.current.mouseX
       const dy = e.clientY - dragStart.current.mouseY
-
-      // Mark as dragged if moved more than 5px
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-        setDragged(true)
-      }
-
-      // We store position as distance from bottom-right corner
-      // Moving right → dx positive → x decreases (closer to right edge)
-      // Moving down  → dy positive → y decreases (closer to bottom edge)
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) setDragged(true)
       const newX = Math.max(8, dragStart.current.posX - dx)
       const newY = Math.max(8, dragStart.current.posY - dy)
-
-      // Clamp to viewport
       const vw = window.innerWidth
       const vh = window.innerHeight
-      const FAB_SIZE = 72 // fab width + some margin
-
+      const FAB_SIZE = 72
       setPos({
         x: Math.min(newX, vw - FAB_SIZE),
         y: Math.min(newY, vh - FAB_SIZE)
@@ -129,7 +112,6 @@ export default function CSChatWidget({
     (e: React.PointerEvent) => {
       setIsDragging(false)
       dragStart.current = null
-      // If it wasn't a drag, treat as click
       if (!dragged) {
         setOpen((v) => !v)
         setShowBubble(false)
@@ -138,10 +120,8 @@ export default function CSChatWidget({
     [dragged]
   )
 
-  // Detect mobile (≤ 600px wide)
   const isMobile = typeof window !== "undefined" && window.innerWidth <= 600
 
-  // Smart panel positioning — stays fully visible regardless of FAB location
   const PANEL_WIDTH = 390
   const PANEL_HEIGHT = 520
   const FAB_W = 58
@@ -165,8 +145,6 @@ export default function CSChatWidget({
     ? { top: Math.max(MARGIN, fabTopEdge + FAB_H + GAP) }
     : { bottom: pos.y + FAB_H + GAP }
 
-  // On mobile: panel is centered in viewport, not anchored to FAB
-  // Desktop only - mobile uses bottom sheet
   const panelStyle: React.CSSProperties = {
     position: "fixed",
     zIndex: 9998,
@@ -174,7 +152,6 @@ export default function CSChatWidget({
     ...vertStyle
   }
 
-  // Bubble always anchored to FAB (both mobile and desktop)
   const bubbleStyle: React.CSSProperties = {
     position: "fixed",
     zIndex: 9998,
@@ -182,7 +159,6 @@ export default function CSChatWidget({
     ...vertStyle
   }
 
-  // Pop-in corner matches actual panel anchor corner (desktop only)
   const transformOrigin = isMobile
     ? "bottom center"
     : `${openDown ? "top" : "bottom"} ${openRight ? "left" : "right"}`
@@ -232,8 +208,8 @@ export default function CSChatWidget({
       to   { opacity:1; transform:translateX(0); }
     }
     @keyframes cs-pulse {
-      0%,100% { transform:scale(1); box-shadow:0 0 0 0 rgba(15,191,159,.4); }
-      50%     { transform:scale(1.06); box-shadow:0 0 0 10px rgba(15,191,159,0); }
+      0%,100% { transform:scale(1); box-shadow:0 0 0 0 rgba(59,130,246,.4); }
+      50%     { transform:scale(1.06); box-shadow:0 0 0 10px rgba(59,130,246,0); }
     }
     @keyframes cs-dot-blink {
       0%,80%,100% { transform:scale(0); opacity:.3; }
@@ -250,7 +226,7 @@ export default function CSChatWidget({
 
     /* Header */
     .cs-header {
-      background:linear-gradient(135deg,#054d42,#087463);
+      background:linear-gradient(135deg,#0c1733,#1e3a8a);
       padding:20px 20px 16px; position:relative; overflow:hidden;
     }
     .cs-header-grid {
@@ -266,20 +242,20 @@ export default function CSChatWidget({
     .cs-agent { display:flex; align-items:center; gap:12px; }
     .cs-avatar {
       width:44px; height:44px; border-radius:12px;
-      background:linear-gradient(135deg,#0fbf9f,#34d399);
+      background:linear-gradient(135deg,#3b82f6,#60a5fa);
       display:flex; align-items:center; justify-content:center;
       font-weight:800; font-size:16px; color:#fff;
       box-shadow:0 4px 12px rgba(0,0,0,.2); flex-shrink:0;
     }
     .cs-agent-name { color:#fff; font-weight:800; font-size:15px; line-height:1.2; }
-    .cs-agent-role { color:rgba(255,255,255,.65); font-size:12px; font-weight:600; margin-top:2px; }
+    .cs-agent-role { color:rgba(255,255,255,.6); font-size:12px; font-weight:600; margin-top:2px; }
     .cs-close {
       width:32px; height:32px; border-radius:8px;
-      background:rgba(255,255,255,.12); border:none; cursor:pointer;
+      background:rgba(255,255,255,.1); border:none; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      color:rgba(255,255,255,.8); transition:background .2s;
+      color:rgba(255,255,255,.75); transition:background .2s;
     }
-    .cs-close:hover { background:rgba(255,255,255,.22); color:#fff; }
+    .cs-close:hover { background:rgba(255,255,255,.2); color:#fff; }
 
     .cs-status-row {
       display:flex; align-items:center; gap:7px;
@@ -288,15 +264,15 @@ export default function CSChatWidget({
     .cs-status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
     .cs-status-dot.online  { background:#34d399; box-shadow:0 0 0 2px rgba(52,211,153,.3); }
     .cs-status-dot.offline { background:#f87171; }
-    .cs-status-txt { font-size:12px; font-weight:600; color:rgba(255,255,255,.8); }
+    .cs-status-txt { font-size:12px; font-weight:600; color:rgba(255,255,255,.75); }
 
     /* Body */
     .cs-body { padding:20px; }
 
     /* Greeting */
     .cs-greeting {
-      background:#f0faf7; border-radius:14px; padding:14px 16px; margin-bottom:18px;
-      border-left:3px solid #0fbf9f; animation:cs-slide-up .4s ease both;
+      background:#eff6ff; border-radius:14px; padding:14px 16px; margin-bottom:18px;
+      border-left:3px solid #3b82f6; animation:cs-slide-up .4s ease both;
     }
     .cs-greeting-txt { font-size:14px; color:#374151; line-height:1.6; font-weight:600; }
     .cs-greeting-offline { font-size:12px; color:#64748b; margin-top:6px; line-height:1.5; }
@@ -316,7 +292,7 @@ export default function CSChatWidget({
       transition:border-color .2s, box-shadow .2s;
       box-sizing:border-box;
     }
-    .cs-input:focus { border-color:#087463; box-shadow:0 0 0 3px rgba(8,116,99,.1); }
+    .cs-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
     .cs-input.err { border-color:#ef4444; }
     .cs-textarea {
       width:100%; min-height:80px; padding:10px 14px;
@@ -327,21 +303,21 @@ export default function CSChatWidget({
       transition:border-color .2s, box-shadow .2s;
       line-height:1.5; box-sizing:border-box;
     }
-    .cs-textarea:focus { border-color:#087463; box-shadow:0 0 0 3px rgba(8,116,99,.1); }
+    .cs-textarea:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
     .cs-textarea.err { border-color:#ef4444; }
     .cs-err-msg { font-size:11px; color:#ef4444; font-weight:600; margin-top:4px; }
 
     .cs-submit {
       width:100%; height:46px; border:none; border-radius:12px;
-      background:linear-gradient(135deg,#087463,#0fbf9f);
+      background:linear-gradient(135deg,#1e3a8a,#3b82f6);
       color:#fff; font-size:15px; font-weight:800;
       font-family:'Nunito',sans-serif;
       cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
-      box-shadow:0 4px 16px rgba(8,116,99,.3);
+      box-shadow:0 4px 16px rgba(59,130,246,.35);
       transition:transform .2s, box-shadow .2s;
       margin-top:4px;
     }
-    .cs-submit:hover { transform:translateY(-1px); box-shadow:0 6px 22px rgba(8,116,99,.4); }
+    .cs-submit:hover { transform:translateY(-1px); box-shadow:0 6px 22px rgba(59,130,246,.45); }
     .cs-submit:active { transform:scale(.98); }
 
     .cs-hours {
@@ -353,26 +329,26 @@ export default function CSChatWidget({
     .cs-success { padding:8px 0 4px; text-align:center; animation:cs-slide-up .4s ease both; }
     .cs-success-icon {
       width:64px; height:64px; border-radius:18px; margin:0 auto 16px;
-      background:linear-gradient(135deg,rgba(8,116,99,.1),rgba(15,191,159,.15));
+      background:linear-gradient(135deg,rgba(30,58,138,.08),rgba(59,130,246,.15));
       display:flex; align-items:center; justify-content:center;
     }
     .cs-success-title { font-weight:800; font-size:17px; color:#0f172a; margin-bottom:8px; }
     .cs-success-sub { font-size:13px; color:#64748b; line-height:1.6; margin-bottom:20px; }
     .cs-back {
       width:100%; height:42px; border:1.5px solid #e2e8f0; border-radius:10px;
-      background:#fff; color:#087463; font-size:14px; font-weight:700;
+      background:#fff; color:#1e3a8a; font-size:14px; font-weight:700;
       font-family:'Nunito',sans-serif; cursor:pointer;
       transition:border-color .2s, background .2s;
     }
-    .cs-back:hover { border-color:#087463; background:#f0faf7; }
+    .cs-back:hover { border-color:#3b82f6; background:#eff6ff; }
 
     /* FAB */
     .cs-fab {
       width:58px; height:58px; border-radius:18px;
-      background:linear-gradient(135deg,#087463,#0fbf9f);
+      background:linear-gradient(135deg,#1e3a8a,#3b82f6);
       border:none;
       display:flex; align-items:center; justify-content:center;
-      box-shadow:0 8px 24px rgba(8,116,99,.45);
+      box-shadow:0 8px 24px rgba(59,130,246,.5);
       position:relative;
       transition:box-shadow .2s, border-radius .2s;
       -webkit-user-select:none; user-select:none;
@@ -383,13 +359,13 @@ export default function CSChatWidget({
       cursor:grab;
     }
     .cs-fab.idle:hover {
-      box-shadow:0 12px 32px rgba(8,116,99,.55);
+      box-shadow:0 12px 32px rgba(59,130,246,.6);
       animation:none;
     }
     .cs-fab.dragging {
       cursor:grabbing;
       animation:none;
-      box-shadow:0 16px 40px rgba(8,116,99,.6);
+      box-shadow:0 16px 40px rgba(59,130,246,.65);
       border-radius:14px;
       transform:scale(1.08);
     }
@@ -430,18 +406,12 @@ export default function CSChatWidget({
     /* Typing dots */
     .cs-typing { display:flex; gap:4px; align-items:center; padding:2px 0; }
     .cs-typing span {
-      width:6px; height:6px; border-radius:50%; background:#0fbf9f;
+      width:6px; height:6px; border-radius:50%; background:#3b82f6;
       animation:cs-dot-blink 1.2s ease-in-out infinite;
     }
     .cs-typing span:nth-child(2) { animation-delay:.2s; }
     .cs-typing span:nth-child(3) { animation-delay:.4s; }
 
-    @keyframes cs-pop-in-mobile {
-      0%   { opacity:0; transform:translateX(-50%) scale(.72); }
-      70%  { transform:translateX(-50%) scale(1.04); }
-      100% { opacity:1; transform:translateX(-50%) scale(1); }
-    }
-    /* Mobile bottom sheet */
     @keyframes cs-sheet-in {
       from { transform:translateY(110%); }
       to   { transform:translateY(0); }
@@ -621,7 +591,7 @@ export default function CSChatWidget({
                 height="32"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#087463"
+                stroke="#3b82f6"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -648,12 +618,10 @@ export default function CSChatWidget({
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {/* Mobile: backdrop */}
       {open && isMobile && (
         <div className="cs-backdrop" onClick={() => setOpen(false)} />
       )}
 
-      {/* Panel — mobile: bottom sheet | desktop: anchored to FAB */}
       {open &&
         (isMobile ? (
           <div className="cs-sheet-wrap">
@@ -668,7 +636,6 @@ export default function CSChatWidget({
           </div>
         ))}
 
-      {/* Greeting bubble */}
       {!open && showBubble && (
         <div style={bubbleStyle}>
           <div className="cs-bubble">
@@ -684,7 +651,6 @@ export default function CSChatWidget({
         </div>
       )}
 
-      {/* FAB — draggable */}
       <div
         className="cs-fab-wrap"
         style={{

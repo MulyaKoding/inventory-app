@@ -15,28 +15,28 @@ const TEAM = [
     name: "Arif Nugroho",
     role: "Founder & CEO",
     initials: "AN",
-    color: "#087463",
+    color: "#1e3a8a",
     desc: "Berpengalaman 8 tahun di bidang supply chain dan pengembangan sistem ERP untuk UKM Indonesia."
   },
   {
     name: "Siti Rahayu",
     role: "Lead Developer",
     initials: "SR",
-    color: "#065a4d",
+    color: "#1d4ed8",
     desc: "Full-stack engineer dengan spesialisasi di sistem inventori real-time dan integrasi marketplace."
   },
   {
     name: "Budi Santoso",
     role: "Product Designer",
     initials: "BS",
-    color: "#0a9c84",
+    color: "#2563eb",
     desc: "UX/UI designer yang fokus pada kemudahan penggunaan sistem manajemen untuk bisnis lokal."
   },
   {
     name: "Dewi Lestari",
     role: "Customer Success",
     initials: "DL",
-    color: "#054d42",
+    color: "#0c1a3a",
     desc: "Membantu ratusan bisnis beralih dari pencatatan manual ke sistem digital dengan lancar."
   }
 ]
@@ -133,7 +133,7 @@ const VALUES = [
           cx="36"
           cy="14"
           r="6"
-          fill="#0fbf9f"
+          fill="#3b82f6"
           stroke="white"
           strokeWidth="2"
         />
@@ -167,7 +167,7 @@ export default function AboutPage() {
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Nunito', sans-serif;
-      background: #f0faf7; color: #0f172a; overflow-x: hidden;
+      background: #f0f6ff; color: #0f172a; overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -189,8 +189,8 @@ export default function AboutPage() {
       animation:navSlide .4s ease forwards;
     }
     .nav.s {
-      background:rgba(255,255,255,.95); backdrop-filter:blur(18px);
-      box-shadow:0 1px 0 rgba(0,0,0,.07),0 4px 20px rgba(8,116,99,.07);
+      background:rgba(8,12,24,.96); backdrop-filter:blur(18px);
+      box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 20px rgba(0,0,0,.4);
     }
     .nav-in {
       max-width:1200px; margin:0 auto;
@@ -200,13 +200,13 @@ export default function AboutPage() {
     .logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
     .logo-box {
       width:40px; height:40px; border-radius:10px;
-      background:linear-gradient(135deg,#087463,#0fbf9f);
+      background:linear-gradient(135deg,#1e3a8a,#3b82f6);
       display:flex; align-items:center; justify-content:center;
-      box-shadow:0 4px 14px rgba(8,116,99,.35);
+      box-shadow:0 4px 14px rgba(59,130,246,.4);
     }
     .logo-lbl { color:#fff; font-weight:800; font-size:11px; letter-spacing:.05em; }
-    .logo-name { font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; letter-spacing:.07em; color:#0f172a; }
-    .logo-em { color:#087463; font-style:normal; }
+    .logo-name { font-family:'Nunito',sans-serif; font-weight:800; font-size:20px; letter-spacing:.07em; color:#fff; }    
+    .logo-em { color:#3b82f6; font-style:normal; }
 
     .nav-links { display:flex; align-items:center; gap:2px; }
     .nl {
@@ -215,23 +215,23 @@ export default function AboutPage() {
     }
     .nl:hover { color:#fff; background:rgba(255,255,255,.1); }
     .nl.on { color:#fff; font-weight:700; }
-    .nav.s .nl { color:#475569; }
-    .nav.s .nl:hover { color:#087463; background:rgba(8,116,99,.07); }
-    .nav.s .nl.on { color:#087463; }
+    .nav.s .nl { color:rgba(255,255,255,.75); }
+    .nav.s .nl:hover { color:#fff; background:rgba(255,255,255,.1); }
+    .nav.s .nl.on { color:#60a5fa; }
 
     .btn-l {
-      height:42px; padding:0 22px; background:#fff; color:#087463;
+      height:42px; padding:0 22px; background:#fff; color:#1e3a8a;
       border:none; border-radius:10px; font-size:15px; font-weight:700;
       cursor:pointer; text-decoration:none; display:flex; align-items:center;
       box-shadow:0 4px 12px rgba(0,0,0,.13); transition:all .2s;
     }
     .btn-l:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.18); }
-    .nav.s .btn-l { background:#087463; color:#fff; box-shadow:0 4px 12px rgba(8,116,99,.3); }
-    .nav.s .btn-l:hover { background:#065a4d; }
+    .nav.s .btn-l { background:#3b82f6; color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(59,130,246,.4); }
+    .nav.s .btn-l:hover { background:#2563eb; }
 
     .hbg { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:6px; background:none; border:none; }
     .hbg span { display:block; width:22px; height:2px; background:#fff; border-radius:2px; transition:all .3s; }
-    .nav.s .hbg span { background:#0f172a; }
+    .nav.s .hbg span { background:#fff; }
     .hbg.op span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
     .hbg.op span:nth-child(2){opacity:0}
     .hbg.op span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
@@ -239,7 +239,7 @@ export default function AboutPage() {
     .m-menu {
       display:none; position:absolute; top:70px; left:0; right:0;
       background:rgba(255,255,255,.97); backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(8,116,99,.1); padding:12px 20px 20px;
+      border-bottom:1px solid rgba(59,130,246,.1); padding:12px 20px 20px;
       box-shadow:0 12px 32px rgba(0,0,0,.08);
       animation:menuIn .2s ease forwards;
     }
@@ -249,9 +249,9 @@ export default function AboutPage() {
       color:#374151; text-decoration:none; margin-bottom:4px; transition:all .2s;
       border:none; background:none; width:100%; text-align:left; cursor:pointer;
     }
-    .m-nl:hover,.m-nl.on { color:#087463; background:rgba(8,116,99,.08); }
+    .m-nl:hover,.m-nl.on { color:#1e3a8a; background:rgba(59,130,246,.08); }
     .m-login {
-      margin-top:12px; width:100%; height:48px; background:#087463; color:#fff;
+      margin-top:12px; width:100%; height:48px; background:#3b82f6; color:#fff;
       border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer;
       text-decoration:none; display:flex; align-items:center; justify-content:center;
     }
@@ -259,22 +259,22 @@ export default function AboutPage() {
     /* HERO */
     .hero {
       min-height:80vh; position:relative; overflow:hidden;
-      background:linear-gradient(160deg,#032e27 0%,#087463 50%,#0a9c84 100%);
+      background:linear-gradient(160deg,#060b1a 0%,#0c1733 30%,#0f2050 60%,#1e3a8a 100%);
       display:flex; align-items:center; padding:120px 32px 80px;
     }
     .h-grid {
       position:absolute; inset:0;
-      background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
-                       linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+      background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
       background-size:48px 48px; animation:gridPan 10s linear infinite; pointer-events:none;
     }
     .h-glow {
       position:absolute; top:-80px; right:-80px; width:500px; height:500px;
-      border-radius:50%; background:radial-gradient(circle,rgba(15,191,159,.22) 0%,transparent 65%); pointer-events:none;
+      border-radius:50%; background:radial-gradient(circle,rgba(59,130,246,.2) 0%,transparent 65%); pointer-events:none;
     }
     .h-glow2 {
       position:absolute; bottom:-60px; left:-60px; width:340px; height:340px;
-      border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.05) 0%,transparent 70%); pointer-events:none;
+      border-radius:50%; background:radial-gradient(circle,rgba(30,58,138,.15) 0%,transparent 70%); pointer-events:none;
     }
     .hero-in {
       max-width:1200px; margin:0 auto; width:100%;
@@ -286,23 +286,23 @@ export default function AboutPage() {
 
     .hero-tag {
       display:inline-flex; align-items:center; gap:8px;
-      background:rgba(255,255,255,.12); backdrop-filter:blur(8px);
+      background:rgba(255,255,255,.08); backdrop-filter:blur(8px);
       border-radius:100px; padding:7px 16px; margin-bottom:24px;
       position:relative; overflow:hidden; isolation:isolate;
     }
     .hero-tag::before {
       content:''; position:absolute; inset:-45px; border-radius:80px;
-      background:conic-gradient(from 0deg,transparent 0%,transparent 80%,#c0c0c0 88%,#f0f0f0 92%,#c0c0c0 96%,transparent 100%);
+      background:conic-gradient(from 0deg,transparent 0%,transparent 80%,#60a5fa 88%,#93c5fd 92%,#60a5fa 96%,transparent 100%);
       animation:border-rotate 2.4s linear infinite; z-index:-2;
     }
     .hero-tag::after {
       content:''; position:absolute; inset:1.5px; border-radius:100px;
-      background:rgba(5,77,66,.85); backdrop-filter:blur(8px); z-index:-1;
+      background:rgba(8,14,36,.85); backdrop-filter:blur(8px); z-index:-1;
     }
-    .tag-dot { width:6px; height:6px; border-radius:50%; background:#0fbf9f; position:relative; flex-shrink:0; }
+    .tag-dot { width:6px; height:6px; border-radius:50%; background:#60a5fa; position:relative; flex-shrink:0; }
     .tag-dot::after {
       content:''; position:absolute; inset:-3px; border-radius:50%;
-      background:rgba(15,191,159,.4); animation:pulse-ring 1.5s ease-out infinite;
+      background:rgba(96,165,250,.4); animation:pulse-ring 1.5s ease-out infinite;
     }
     .hero-tag span { color:rgba(255,255,255,.9); font-size:12px; font-family:'Nunito',sans-serif; letter-spacing:.04em; }
 
@@ -311,27 +311,27 @@ export default function AboutPage() {
       font-size:clamp(36px,5vw,56px); line-height:1.1;
       color:#fff; letter-spacing:-.02em; margin-bottom:20px;
     }
-    .hero-h1 em { font-style:normal; color:#0fbf9f; }
-    .hero-desc { color:rgba(255,255,255,.75); font-size:17px; line-height:1.75; margin-bottom:36px; max-width:460px; }
+    .hero-h1 em { font-style:normal; color:#60a5fa; }
+    .hero-desc { color:rgba(255,255,255,.7); font-size:17px; line-height:1.75; margin-bottom:36px; max-width:460px; }
 
     /* Mission card floating */
     .mission-float {
-      background:rgba(255,255,255,.08); backdrop-filter:blur(20px);
-      border:1px solid rgba(255,255,255,.14); border-radius:24px;
+      background:rgba(255,255,255,.05); backdrop-filter:blur(20px);
+      border:1px solid rgba(255,255,255,.12); border-radius:24px;
       padding:36px; animation:floatY 5s ease-in-out infinite;
-      box-shadow:0 24px 64px rgba(0,0,0,.28);
+      box-shadow:0 24px 64px rgba(0,0,0,.35);
     }
     .mission-lbl {
       font-family:'Nunito',sans-serif; font-size:10px; font-weight:700;
-      color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.1em; margin-bottom:14px;
+      color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.1em; margin-bottom:14px;
     }
     .mission-text {
       font-size:17px; color:#fff; line-height:1.7; font-weight:600; margin-bottom:24px;
     }
-    .mission-text em { font-style:normal; color:#0fbf9f; }
+    .mission-text em { font-style:normal; color:#60a5fa; }
     .mission-chips { display:flex; gap:8px; flex-wrap:wrap; }
     .m-chip {
-      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
       border-radius:100px; padding:5px 14px;
       color:rgba(255,255,255,.8); font-size:12px; font-weight:600;
     }
@@ -349,7 +349,7 @@ export default function AboutPage() {
     .stat-block:last-child { border-right:none; }
     .stat-block-v {
       font-family:'Nunito',sans-serif; font-weight:800; font-size:38px;
-      color:#087463; letter-spacing:-.03em; line-height:1;
+      color:#1e3a8a; letter-spacing:-.03em; line-height:1;
     }
     .stat-block-l {
       color:#64748b; font-size:13px; font-weight:600; margin-top:6px;
@@ -361,15 +361,15 @@ export default function AboutPage() {
     .sec-in { max-width:1200px; margin:0 auto; }
     .sec-tag {
       display:inline-flex; align-items:center; gap:8px;
-      background:rgba(8,116,99,.1); border-radius:100px; padding:5px 14px; margin-bottom:14px; margin-top:12px;
+      background:rgba(59,130,246,.1); border-radius:100px; padding:5px 14px; margin-bottom:14px; margin-top:12px;
     }
-    .sec-tag span { color:#087463; font-size:12px; font-weight:700; font-family:'Nunito',sans-serif; text-transform:uppercase; letter-spacing:.05em; }
+    .sec-tag span { color:#1e3a8a; font-size:12px; font-weight:700; font-family:'Nunito',sans-serif; text-transform:uppercase; letter-spacing:.05em; }
     .sec-h2 {
       font-family:'Nunito',sans-serif; font-weight:800;
       font-size:clamp(28px,4vw,42px); color:#0f172a;
       letter-spacing:-.02em; line-height:1.2; margin-bottom:12px;
     }
-    .sec-h2 em { font-style:normal; color:#087463; }
+    .sec-h2 em { font-style:normal; color:#1e3a8a; }
     .sec-sub { color:#64748b; font-size:16px; line-height:1.65; max-width:500px; margin-bottom:56px; }
 
     /* VALUES */
@@ -378,11 +378,11 @@ export default function AboutPage() {
       background:#fff; border:1.5px solid #e2e8f0; border-radius:18px; padding:30px;
       transition:border-color .25s,box-shadow .25s,transform .25s;
     }
-    .val-card:hover { border-color:#087463; box-shadow:0 8px 32px rgba(8,116,99,.12); transform:translateY(-4px); }
+    .val-card:hover { border-color:#3b82f6; box-shadow:0 8px 32px rgba(59,130,246,.12); transform:translateY(-4px); }
     .val-ico {
       width:56px; height:56px; border-radius:12px;
-      background:linear-gradient(135deg,rgba(8,116,99,.1),rgba(15,191,159,.1));
-      display:flex; align-items:center; justify-content:center; color:#087463; margin-bottom:18px;
+      background:linear-gradient(135deg,rgba(30,58,138,.08),rgba(59,130,246,.12));
+      display:flex; align-items:center; justify-content:center; color:#1e3a8a; margin-bottom:18px;
     }
     .val-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:17px; color:#0f172a; margin-bottom:8px; }
     .val-desc { color:#64748b; font-size:14px; line-height:1.65; }
@@ -391,7 +391,7 @@ export default function AboutPage() {
     .timeline-wrap { position:relative; }
     .timeline-line {
       position:absolute; left:80px; top:0; bottom:0; width:1.5px;
-      background:linear-gradient(180deg,#087463,rgba(8,116,99,.1));
+      background:linear-gradient(180deg,#3b82f6,rgba(59,130,246,.1));
     }
     .tl-item {
       display:flex; gap:32px; align-items:flex-start; margin-bottom:36px; position:relative;
@@ -399,7 +399,7 @@ export default function AboutPage() {
     }
     .tl-year {
       width:80px; flex-shrink:0; text-align:right; padding-right:20px; padding-top:4px;
-      font-family:'Nunito',sans-serif; font-weight:700; font-size:14px; color:#087463;
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:14px; color:#3b82f6;
     }
     .tl-dot-wrap {
       position:relative; z-index:1; flex-shrink:0;
@@ -407,14 +407,14 @@ export default function AboutPage() {
       margin-top:4px;
     }
     .tl-dot {
-      width:12px; height:12px; border-radius:50%; background:#087463;
-      box-shadow:0 0 0 4px rgba(8,116,99,.15);
+      width:12px; height:12px; border-radius:50%; background:#3b82f6;
+      box-shadow:0 0 0 4px rgba(59,130,246,.15);
     }
     .tl-content {
       flex:1; background:#fff; border:1.5px solid #e2e8f0; border-radius:16px;
       padding:20px 24px; transition:border-color .25s,box-shadow .25s;
     }
-    .tl-content:hover { border-color:#087463; box-shadow:0 4px 20px rgba(8,116,99,.1); }
+    .tl-content:hover { border-color:#3b82f6; box-shadow:0 4px 20px rgba(59,130,246,.1); }
     .tl-title { font-weight:800; font-size:16px; color:#0f172a; margin-bottom:5px; font-family:'Nunito',sans-serif; }
     .tl-desc { color:#64748b; font-size:14px; line-height:1.6; }
 
@@ -426,7 +426,7 @@ export default function AboutPage() {
       transition:border-color .25s,box-shadow .25s,transform .25s;
       animation:slideInUp .6s ease both;
     }
-    .team-card:hover { border-color:#087463; box-shadow:0 8px 32px rgba(8,116,99,.12); transform:translateY(-4px); }
+    .team-card:hover { border-color:#3b82f6; box-shadow:0 8px 32px rgba(59,130,246,.12); transform:translateY(-4px); }
     .team-avatar {
       width:72px; height:72px; border-radius:18px; margin:0 auto 16px;
       display:flex; align-items:center; justify-content:center;
@@ -436,25 +436,23 @@ export default function AboutPage() {
     .team-name { font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; color:#0f172a; margin-bottom:4px; }
     .team-role {
       font-family:'Nunito',sans-serif; font-size:11px; font-weight:700;
-      color:#087463; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px;
+      color:#3b82f6; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px;
     }
     .team-desc { color:#64748b; font-size:13px; line-height:1.6; }
 
     /* CONTACT */
-    .contact-sec {
-      padding:0 32px 100px;
-    }
+    .contact-sec { padding:0 32px 100px; }
     .contact-in {
       max-width:1200px; margin:0 auto;
-      background:linear-gradient(145deg,#054d42,#087463,#0a9c84);
+      background:linear-gradient(145deg,#060b1a,#0c1733,#1e3a8a);
       border-radius:28px; padding:72px 64px;
       display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;
       position:relative; overflow:hidden;
     }
     .contact-grid-bg {
       position:absolute; inset:0;
-      background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
-                       linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+      background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+                       linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
       background-size:40px 40px; pointer-events:none;
     }
     .contact-left { position:relative; z-index:1; }
@@ -463,35 +461,35 @@ export default function AboutPage() {
       font-size:clamp(26px,3.5vw,38px); color:#fff;
       letter-spacing:-.02em; margin-bottom:14px;
     }
-    .contact-h2 em { font-style:normal; color:#0fbf9f; }
-    .contact-desc { color:rgba(255,255,255,.75); font-size:15px; line-height:1.75; margin-bottom:8px; }
+    .contact-h2 em { font-style:normal; color:#60a5fa; }
+    .contact-desc { color:rgba(255,255,255,.7); font-size:15px; line-height:1.75; margin-bottom:8px; }
     .contact-right { position:relative; z-index:1; display:flex; flex-direction:column; gap:14px; }
     .contact-item {
       display:flex; align-items:center; gap:16px;
       background:rgba(0,0,0,.2); backdrop-filter:blur(12px);
-      border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:20px 24px;
+      border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:20px 24px;
       text-decoration:none; transition:background .2s,border-color .2s,transform .15s;
     }
-    .contact-item:hover { background:rgba(0,0,0,.32); border-color:rgba(255,255,255,.25); transform:translateX(4px); }
+    .contact-item:hover { background:rgba(0,0,0,.32); border-color:rgba(255,255,255,.22); transform:translateX(4px); }
     .contact-ico {
       width:48px; height:48px; border-radius:12px;
-      background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center;
       flex-shrink:0;
     }
     .contact-label {
       font-family:'Nunito',sans-serif; font-size:10px; font-weight:700;
-      color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.07em; margin-bottom:4px;
+      color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.07em; margin-bottom:4px;
     }
     .contact-val { color:#fff; font-weight:700; font-size:16px; }
 
     /* FOOTER */
     .footer {
-      background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 50%,#1f1f1f 100%);
+      background:linear-gradient(135deg,#050a14 0%,#0c1733 50%,#080d1f 100%);
       padding:40px 32px; text-align:center;
     }
     .f-logo { font-family:'Nunito',sans-serif; font-weight:800; font-size:22px; color:#fff; letter-spacing:.07em; margin-bottom:8px; }
-    .f-logo em { font-style:normal; color:#0fbf9f; }
-    .f-sub { color:rgba(255,255,255,.38); font-size:13px; font-family:'Nunito',sans-serif; font-weight:500; }
+    .f-logo em { font-style:normal; color:#60a5fa; }
+    .f-sub { color:rgba(255,255,255,.3); font-size:13px; font-family:'Nunito',sans-serif; font-weight:500; }
 
     /* RESPONSIVE */
     @media(max-width:960px){
@@ -608,8 +606,8 @@ export default function AboutPage() {
                 style={{
                   height: 52,
                   padding: "0 28px",
-                  background: "#fff",
-                  color: "#087463",
+                  background: "#3b82f6",
+                  color: "#fff",
                   border: "none",
                   borderRadius: 12,
                   fontSize: 15,
@@ -619,7 +617,7 @@ export default function AboutPage() {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 8,
-                  boxShadow: "0 8px 24px rgba(0,0,0,.15)",
+                  boxShadow: "0 8px 24px rgba(59,130,246,.4)",
                   transition: "transform .2s,box-shadow .2s"
                 }}
               >
@@ -641,9 +639,9 @@ export default function AboutPage() {
                 style={{
                   height: 52,
                   padding: "0 28px",
-                  background: "rgba(255,255,255,.12)",
+                  background: "rgba(255,255,255,.08)",
                   color: "#fff",
-                  border: "1.5px solid rgba(255,255,255,.3)",
+                  border: "1.5px solid rgba(255,255,255,.2)",
                   borderRadius: 12,
                   fontSize: 15,
                   fontWeight: 700,
@@ -708,7 +706,7 @@ export default function AboutPage() {
       </div>
 
       {/* VALUES & STORY */}
-      <section className="sec" style={{ background: "#f0faf7" }}>
+      <section className="sec" style={{ background: "#f0f6ff" }}>
         <div className="sec-in">
           <div className="sec-tag">
             <span>Nilai Kami</span>
@@ -792,7 +790,7 @@ export default function AboutPage() {
                 <div
                   className="team-avatar"
                   style={{
-                    background: `linear-gradient(135deg, ${m.color}, #0fbf9f)`
+                    background: `linear-gradient(135deg, ${m.color}, #3b82f6)`
                   }}
                 >
                   {m.initials}
@@ -813,9 +811,9 @@ export default function AboutPage() {
           <div className="contact-left">
             <div
               className="sec-tag"
-              style={{ background: "rgba(255,255,255,.15)", marginBottom: 16 }}
+              style={{ background: "rgba(255,255,255,.12)", marginBottom: 16 }}
             >
-              <span style={{ color: "#fff" }}>Hubungi Kami</span>
+              <span style={{ color: "#93c5fd" }}>Hubungi Kami</span>
             </div>
             <h2 className="contact-h2">
               Ada Pertanyaan?
@@ -829,7 +827,7 @@ export default function AboutPage() {
             <p
               className="contact-desc"
               style={{
-                color: "rgba(255,255,255,.5)",
+                color: "rgba(255,255,255,.45)",
                 fontSize: 13,
                 marginTop: 8
               }}
@@ -849,11 +847,11 @@ export default function AboutPage() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"
-                    fill="#0fbf9f"
+                    fill="#60a5fa"
                   />
                   <path
                     d="M12 2C6.477 2 2 6.477 2 12c0 1.89.524 3.656 1.435 5.163L2 22l4.978-1.405A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"
-                    stroke="rgba(255,255,255,.4)"
+                    stroke="rgba(255,255,255,.35)"
                     strokeWidth="1.5"
                     fill="none"
                   />
@@ -864,7 +862,7 @@ export default function AboutPage() {
                 <div className="contact-val">+62 852-1878-9439</div>
               </div>
               <div
-                style={{ marginLeft: "auto", color: "rgba(255,255,255,.35)" }}
+                style={{ marginLeft: "auto", color: "rgba(255,255,255,.3)" }}
               >
                 <svg
                   width="18"
@@ -888,7 +886,7 @@ export default function AboutPage() {
                   height="24"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#0fbf9f"
+                  stroke="#60a5fa"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -901,7 +899,7 @@ export default function AboutPage() {
                 <div className="contact-val">+62 852-1878-9439</div>
               </div>
               <div
-                style={{ marginLeft: "auto", color: "rgba(255,255,255,.35)" }}
+                style={{ marginLeft: "auto", color: "rgba(255,255,255,.3)" }}
               >
                 <svg
                   width="18"
@@ -925,7 +923,7 @@ export default function AboutPage() {
                   height="24"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#0fbf9f"
+                  stroke="#60a5fa"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -939,7 +937,7 @@ export default function AboutPage() {
                 <div className="contact-val">hello@stockr.id</div>
               </div>
               <div
-                style={{ marginLeft: "auto", color: "rgba(255,255,255,.35)" }}
+                style={{ marginLeft: "auto", color: "rgba(255,255,255,.3)" }}
               >
                 <svg
                   width="18"
