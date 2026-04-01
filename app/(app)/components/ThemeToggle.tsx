@@ -1,54 +1,5 @@
 "use client"
 
-import { Box, Tooltip } from "@mui/material"
-
-const MoonIcon = ({
-  size = 18,
-  color = "currentColor"
-}: {
-  size?: number
-  color?: string
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill={color}
-    stroke="none"
-  >
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-)
-
-const SunIcon = ({
-  size = 18,
-  color = "currentColor"
-}: {
-  size?: number
-  color?: string
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke={color}
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-)
-
 export function ThemeToggle({
   isDark,
   onToggle
@@ -76,34 +27,11 @@ export function ThemeToggle({
         flexShrink: 0
       }}
     >
-      {/* Moon kiri — dark mode */}
+      {/* Sun kiri — muncul saat LIGHT mode */}
       <span
         style={{
           position: "absolute",
           left: 7,
-          opacity: isDark ? 0.6 : 0,
-          transition: "opacity 0.3s",
-          display: "flex",
-          alignItems: "center",
-          pointerEvents: "none"
-        }}
-      >
-        <svg
-          width={11}
-          height={11}
-          viewBox="0 0 24 24"
-          fill="#60a5fa"
-          stroke="none"
-        >
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      </span>
-
-      {/* Sun kanan — light mode */}
-      <span
-        style={{
-          position: "absolute",
-          right: 7,
           opacity: isDark ? 0 : 0.6,
           transition: "opacity 0.3s",
           display: "flex",
@@ -133,6 +61,29 @@ export function ThemeToggle({
         </svg>
       </span>
 
+      {/* Moon kanan — muncul saat DARK mode */}
+      <span
+        style={{
+          position: "absolute",
+          right: 7,
+          opacity: isDark ? 0.6 : 0,
+          transition: "opacity 0.3s",
+          display: "flex",
+          alignItems: "center",
+          pointerEvents: "none"
+        }}
+      >
+        <svg
+          width={11}
+          height={11}
+          viewBox="0 0 24 24"
+          fill="#60a5fa"
+          stroke="none"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </span>
+
       {/* Knob */}
       <span
         style={{
@@ -155,6 +106,18 @@ export function ThemeToggle({
         }}
       >
         {isDark ? (
+          // Dark mode aktif → icon moon di knob
+          <svg
+            width={11}
+            height={11}
+            viewBox="0 0 24 24"
+            fill="#fff"
+            stroke="none"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        ) : (
+          // Light mode aktif → icon sun di knob
           <svg
             width={11}
             height={11}
@@ -174,16 +137,6 @@ export function ThemeToggle({
             <line x1="21" y1="12" x2="23" y2="12" />
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-          </svg>
-        ) : (
-          <svg
-            width={11}
-            height={11}
-            viewBox="0 0 24 24"
-            fill="#93c5fd"
-            stroke="none"
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
           </svg>
         )}
       </span>
