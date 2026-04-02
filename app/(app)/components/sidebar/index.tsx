@@ -51,14 +51,14 @@ export const NAV_ITEMS = [
     href: "/inventory"
   },
   {
-    label: "Orders",
-    icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
-    href: "/orders"
-  },
-  {
     label: "Registrasi Toko",
     icon: "M3 3v18h18M18 9l-5 5-4-4-4 4",
     href: "/registration"
+  },
+  {
+    label: "Daftar Toko",
+    icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+    href: "/list-toko"
   },
   {
     label: "Settings",
