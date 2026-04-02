@@ -1,5 +1,7 @@
 "use client"
 
+import { SvgIcon } from "@mui/material"
+
 export function ThemeToggle({
   isDark,
   onToggle

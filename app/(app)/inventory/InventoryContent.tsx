@@ -2,22 +2,14 @@
 
 import {
   Alert,
-  Avatar,
-  Badge,
   Box,
   Button,
   Chip,
   Dialog,
   DialogContent,
   DialogTitle,
-  Divider,
   Drawer,
   IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   MenuItem,
   Paper,
   Select,
@@ -43,10 +35,10 @@ import {
 } from "@mui/x-data-grid"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Header from "../components/header/page"
+import Sidebar from "../components/sidebar/page" // ← shared component
 
 const DRAWER_WIDTH = 220
 
-// ── ICONS ─────────────────────────────────────────────────────────────────────
 const Icon = ({
   d,
   size = 20,
@@ -69,74 +61,9 @@ const Icon = ({
     <path d={d} />
   </svg>
 )
-const MoonIcon = ({
-  size = 18,
-  color = "currentColor"
-}: {
-  size?: number
-  color?: string
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill={color}
-    stroke="none"
-  >
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-)
-const SunIcon = ({
-  size = 18,
-  color = "currentColor"
-}: {
-  size?: number
-  color?: string
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke={color}
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-)
 
 const CATEGORIES = ["Electronics", "Apparel", "Home", "Tools", "Beauty"]
 const STATUSES = ["In Stock", "Low Stock", "Out of Stock"]
-const NAV_ITEMS = [
-  {
-    label: "Dashboard",
-    icon: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"
-  },
-  {
-    label: "Inventory",
-    icon: "M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 3H8L6 7h12z",
-    active: true
-  },
-  {
-    label: "Orders",
-    icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
-  },
-  { label: "Analytics", icon: "M3 3v18h18M18 9l-5 5-4-4-4 4" },
-  {
-    label: "Settings",
-    icon: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a7.1 7.1 0 0 0 .1-1v-2a7.1 7.1 0 0 0-.1-1l2.2-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.6 1a6.8 6.8 0 0 0-1.7-1l-.4-2.7A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.4l-.4 2.8a6.8 6.8 0 0 0-1.7 1l-2.6-1a.5.5 0 0 0-.6.2L2.2 8.9a.5.5 0 0 0 .1.6L4.5 11a7.1 7.1 0 0 0-.1 1v2a7.1 7.1 0 0 0 .1 1L2.3 16.6a.5.5 0 0 0-.1.6l2 3.5a.5.5 0 0 0 .6.2l2.6-1a6.8 6.8 0 0 0 1.7 1l.4 2.7a.5.5 0 0 0 .5.4h4a.5.5 0 0 0 .5-.4l.4-2.7a6.8 6.8 0 0 0 1.7-1l2.6 1a.5.5 0 0 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6z"
-  }
-]
 
 function statusColor(status: string, isDark: boolean) {
   if (status === "In Stock")
@@ -235,7 +162,6 @@ function CustomToolbar({
   )
 }
 
-// ── ADD PRODUCT MODAL ─────────────────────────────────────────────────────────
 function AddProductModal({
   open,
   onClose,
@@ -488,138 +414,6 @@ function AddProductModal({
   )
 }
 
-// ── SIDEBAR CONTENT ───────────────────────────────────────────────────────────
-function SidebarContent({
-  p,
-  isDark,
-  T
-}: {
-  p: Record<string, string>
-  isDark: boolean
-  T: string
-}) {
-  const [userName, setUserName] = useState("User")
-  const [userRole, setUserRole] = useState("Member")
-
-  useEffect(() => {
-    const getCookie = (name: string) => {
-      if (typeof document === "undefined") return ""
-      const match = document.cookie
-        .split("; ")
-        .find((r) => r.startsWith(`${name}=`))
-      return match ? decodeURIComponent(match.split("=")[1]) : ""
-    }
-    const name = getCookie("user_name")
-    const role = getCookie("user_role")
-    if (name) setUserName(name)
-    if (role) setUserRole(role)
-  }, [])
-
-  const avatarLetter = userName.charAt(0).toUpperCase()
-  return (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <Box
-        sx={{ px: 3, py: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}
-      >
-        <Box
-          sx={{
-            width: 32,
-            height: 32,
-            bgcolor: "#087463",
-            borderRadius: "4px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          <Typography
-            sx={{
-              color: "#0D0D0D",
-              fontWeight: 900,
-              fontSize: 14,
-              fontFamily: "inherit"
-            }}
-          >
-            INV
-          </Typography>
-        </Box>
-        <Typography
-          sx={{
-            color: p.textPrimary,
-            fontWeight: 700,
-            fontSize: 15,
-            letterSpacing: "0.05em",
-            transition: `color ${T}`
-          }}
-        >
-          STOCKR
-        </Typography>
-      </Box>
-      <Divider sx={{ borderColor: p.border, mb: 1 }} />
-      <List dense sx={{ px: 1 }}>
-        {NAV_ITEMS.map((item) => (
-          <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
-            <ListItemButton
-              sx={{
-                borderRadius: "4px",
-                px: 1.5,
-                py: 1,
-                bgcolor: item.active ? p.activeNavBg : "transparent",
-                border: `1px solid ${item.active ? p.activeNavBorder : "transparent"}`,
-                "&:hover": { bgcolor: item.active ? p.activeNavBg : p.hoverBg }
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <Icon
-                  d={item.icon}
-                  size={16}
-                  color={item.active ? "#087463" : p.textMuted}
-                />
-              </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontSize: 13,
-                  fontWeight: item.active ? 700 : 400,
-                  color: item.active ? "#087463" : p.textSecondary,
-                  fontFamily: "'DM Mono', monospace"
-                }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Box
-        sx={{ mt: "auto", px: 2, py: 3, borderTop: `1px solid ${p.border}` }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Avatar
-            sx={{ width: 32, height: 32, bgcolor: "#FF6B35", fontSize: 12 }}
-          >
-            {avatarLetter}
-          </Avatar>
-          <Box>
-            <Typography
-              sx={{ color: p.textPrimary, fontSize: 12, fontWeight: 600 }}
-            >
-              {userName.length > 14 ? userName.slice(0, 14) + "…" : userName}
-            </Typography>
-            <Typography
-              sx={{
-                color: p.textMuted,
-                fontSize: 10,
-                textTransform: "capitalize"
-              }}
-            >
-              {userRole}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
-  )
-}
-
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function MainPage() {
   const [isDark, setIsDark] = useState(false)
@@ -642,8 +436,7 @@ export default function MainPage() {
     try {
       const res = await fetch("/api/products")
       const data = await res.json()
-      const mapped = data.map((p: any) => ({ ...p, id: p.id || p._id }))
-      setRows(mapped)
+      setRows(data.map((p: any) => ({ ...p, id: p.id || p._id })))
     } catch {
       showSnackbar("Gagal mengambil data produk", "error")
     } finally {
@@ -703,25 +496,30 @@ export default function MainPage() {
     [isDark]
   )
 
+  const T = "0.3s ease"
+
   const processRowUpdate = useCallback(async (newRow: GridRowModel) => {
-    let updatedRow = { ...newRow }
-    if (typeof updatedRow.stock === "number") {
-      if (updatedRow.stock === 0) updatedRow.status = "Out of Stock"
-      else if (updatedRow.stock < 15) updatedRow.status = "Low Stock"
-      else updatedRow.status = "In Stock"
+    let updated = { ...newRow }
+    if (typeof updated.stock === "number") {
+      updated.status =
+        updated.stock === 0
+          ? "Out of Stock"
+          : updated.stock < 15
+            ? "Low Stock"
+            : "In Stock"
     }
     try {
-      const res = await fetch(`/api/products/${updatedRow.id}`, {
+      const res = await fetch(`/api/products/${updated.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedRow)
+        body: JSON.stringify(updated)
       })
-      if (!res.ok) throw new Error("Update failed")
+      if (!res.ok) throw new Error()
       const saved = await res.json()
       setRows((prev) =>
         prev.map((r) => (r.id === saved.id ? { ...saved, id: saved.id } : r))
       )
-      showSnackbar(`"${updatedRow.name}" berhasil diupdate`, "success")
+      showSnackbar(`"${updated.name}" berhasil diupdate`, "success")
       return { ...saved, id: saved.id }
     } catch {
       showSnackbar("Gagal menyimpan perubahan", "error")
@@ -878,7 +676,6 @@ export default function MainPage() {
         type: "number",
         renderCell: (params: GridRenderCellParams) => {
           const v = params.value as number
-          const pct = Math.min(100, (v / 150) * 100)
           const barColor = v === 0 ? "#f87171" : v < 15 ? "#fb923c" : "#087463"
           return (
             <Box sx={{ width: "100%", py: 0.5 }}>
@@ -904,7 +701,7 @@ export default function MainPage() {
               >
                 <Box
                   sx={{
-                    width: `${pct}%`,
+                    width: `${Math.min(100, (v / 150) * 100)}%`,
                     height: "100%",
                     bgcolor: barColor,
                     borderRadius: 1
@@ -1008,7 +805,14 @@ export default function MainPage() {
     [isDark, p, handleDelete]
   )
 
-  const T = "0.3s ease"
+  const drawerPaperSx = (pt: boolean) => ({
+    width: DRAWER_WIDTH,
+    boxSizing: "border-box" as const,
+    bgcolor: p.sidebarBg,
+    borderRight: `1px solid ${p.border}`,
+    pt: pt ? 1 : 0,
+    transition: `background-color ${T}, border-color ${T}`
+  })
 
   return (
     <ThemeProvider theme={theme}>
@@ -1021,7 +825,7 @@ export default function MainPage() {
           transition: `background-color ${T}`
         }}
       >
-        {/* ── SIDEBAR MOBILE (temporary) ── */}
+        {/* ── SIDEBAR MOBILE ── */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -1029,35 +833,23 @@ export default function MainPage() {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": {
-              width: DRAWER_WIDTH,
-              boxSizing: "border-box",
-              bgcolor: p.sidebarBg,
-              borderRight: `1px solid ${p.border}`
-            }
+            "& .MuiDrawer-paper": drawerPaperSx(false)
           }}
         >
-          <SidebarContent p={p} isDark={isDark} T={T} />
+          <Sidebar p={p} isDark={isDark} T={T} />
         </Drawer>
 
-        {/* ── SIDEBAR DESKTOP (permanent) ── */}
+        {/* ── SIDEBAR DESKTOP ── */}
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: "none", md: "block" },
             width: DRAWER_WIDTH,
             flexShrink: 0,
-            "& .MuiDrawer-paper": {
-              width: DRAWER_WIDTH,
-              boxSizing: "border-box",
-              bgcolor: p.sidebarBg,
-              borderRight: `1px solid ${p.border}`,
-              pt: 1,
-              transition: `background-color ${T}, border-color ${T}`
-            }
+            "& .MuiDrawer-paper": drawerPaperSx(true)
           }}
         >
-          <SidebarContent p={p} isDark={isDark} T={T} />
+          <Sidebar p={p} isDark={isDark} T={T} />
         </Drawer>
 
         {/* ── MAIN CONTENT ── */}
@@ -1082,7 +874,6 @@ export default function MainPage() {
             p={p}
           />
 
-          {/* Content */}
           <Box sx={{ flex: 1, overflow: "auto", p: { xs: 2, md: 4 } }}>
             {/* Stat Cards */}
             <Box
@@ -1250,7 +1041,6 @@ export default function MainPage() {
         </Box>
       </Box>
 
-      {/* Add Product Modal */}
       <AddProductModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -1262,7 +1052,6 @@ export default function MainPage() {
         p={p}
       />
 
-      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={2500}
