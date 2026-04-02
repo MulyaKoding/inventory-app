@@ -35,3 +35,32 @@ model Product {
 
   @@map("products")
 }
+
+model Store {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeId     String   @unique
+  storeName   String
+  storeType   String
+  storePhone  String
+  storeEmail  String?
+  storeAddress String
+  storeCity   String
+  storeProvince String
+  storePostalCode String?
+  status      String   @default("active")
+  owner       Owner?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("stores")
+}
+
+type Owner {
+  nik           String
+  fullName      String
+  birthDate     String
+  address       String
+  gender        String
+  ktpImageUrl   String?
+  inputMethod   String   @default("manual")
+}

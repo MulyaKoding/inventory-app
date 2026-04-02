@@ -56,9 +56,9 @@ export const NAV_ITEMS = [
     href: "/orders"
   },
   {
-    label: "Analytics",
+    label: "Registrasi Toko",
     icon: "M3 3v18h18M18 9l-5 5-4-4-4 4",
-    href: "/analytics"
+    href: "/registration"
   },
   {
     label: "Settings",
