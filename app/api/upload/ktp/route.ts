@@ -48,7 +48,6 @@ export async function POST(req: NextRequest) {
     // Upload ke Cloudinary pakai base64 — hemat memori, tidak perlu simpan file sementara
     const uploadResult = await cloudinary.uploader.upload(dataUri, {
       folder: "inventory/ktp",
-      upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET!,
       resource_type: "image",
       // Transformasi: kompres + resize supaya tidak memakan storage berlebih
       transformation: [
