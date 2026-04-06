@@ -71,8 +71,9 @@ export async function POST(req: NextRequest) {
     )
   } catch (error) {
     console.error("Upload KTP error:", error)
+    const errMsg = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: "Gagal mengupload gambar" },
+      { error: "Gagal mengupload gambar", detail: errMsg }, // ← tambah detail
       { status: 500 }
     )
   }

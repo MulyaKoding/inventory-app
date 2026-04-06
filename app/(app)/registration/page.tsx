@@ -344,23 +344,27 @@ export default function RegistrationPage() {
     setOcrStatus("scanning")
     setOcrError("")
     try {
-      // Buat File sekali, pakai untuk kedua request
-      const ktpFile = new File([blob], "ktp.jpg", { type: mimeType })
+      // Baca arrayBuffer SEKALI di awal, simpan ke variable
+      // Ini penting karena blob/file stream hanya bisa dibaca sekali
+      const arrayBuffer = await blob.arrayBuffer()
+      const uint8Array = new Uint8Array(arrayBuffer)
 
       // ── Step 1: OCR ──
+      const blob1 = new Blob([uint8Array], { type: mimeType })
       const ocrForm = new FormData()
-      ocrForm.append("ktp", ktpFile)
+      ocrForm.append("ktp", new File([blob1], "ktp.jpg", { type: mimeType }))
       const ocrRes = await fetch("/api/ocr", { method: "POST", body: ocrForm })
       const ocrResult = await ocrRes.json()
       if (!ocrRes.ok) throw new Error(ocrResult.error || "Gagal memproses KTP")
 
       // ── Step 2: Upload ke Cloudinary ──
-      // PENTING: Buat File baru lagi dari blob yang sama
-      // karena File pertama sudah di-consume oleh fetch sebelumnya
-      const ktpFile2 = new File([blob], "ktp.jpg", { type: mimeType })
+      // Buat blob baru dari uint8Array yang sama — tidak bergantung pada blob asli
+      const blob2 = new Blob([uint8Array], { type: mimeType })
       const uploadForm = new FormData()
-      uploadForm.append("file", ktpFile2)
-
+      uploadForm.append(
+        "file",
+        new File([blob2], "ktp.jpg", { type: mimeType })
+      )
       const uploadRes = await fetch("/api/upload/ktp", {
         method: "POST",
         body: uploadForm
