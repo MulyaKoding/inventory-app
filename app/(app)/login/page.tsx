@@ -448,7 +448,7 @@ export default function LoginPage() {
             <div className="lg-field">
               <label className="lg-lbl">
                 Password
-                <a href="#" className="lg-forgot">
+                <a href="/reset-password" className="lg-forgot">
                   Lupa password?
                 </a>
               </label>
