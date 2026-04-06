@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@/app/generated/prisma"
+import { prisma } from "@/app/lib/prisma"
+import { getUserFromRequest } from "@/app/lib/auth"
 
-const prisma = new PrismaClient()
-
-function generateStoreId(): string {
+function generateStoreId(userId: string): string {
   const prefix = "STR"
+  const userSuffix = userId.slice(-4).toUpperCase()
   const timestamp = Date.now().toString().slice(-6)
   const random = Math.floor(Math.random() * 1000)
     .toString()
     .padStart(3, "0")
-  return `${prefix}-${timestamp}-${random}`
+  return `${prefix}-${userSuffix}-${timestamp}-${random}`
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const user = getUserFromRequest(req)
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
+    const body = await req.json()
     const {
       storeName,
       storeType,
@@ -63,11 +67,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const storeId = generateStoreId()
+    const storeId = generateStoreId(user.userId)
 
     const store = await prisma.store.create({
       data: {
         storeId,
+        userId: user.userId, // ← dari token
         storeName,
         storeType,
         storePhone,
@@ -90,11 +95,7 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json(
-      {
-        success: true,
-        message: "Toko berhasil didaftarkan",
-        data: store
-      },
+      { success: true, message: "Toko berhasil didaftarkan", data: store },
       { status: 201 }
     )
   } catch (error: unknown) {
@@ -102,14 +103,18 @@ export async function POST(req: NextRequest) {
     const message =
       error instanceof Error ? error.message : "Terjadi kesalahan server"
     return NextResponse.json({ error: message }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const user = getUserFromRequest(req)
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const stores = await prisma.store.findMany({
+      where: { userId: user.userId }, // ← hanya toko milik user ini
       orderBy: { createdAt: "desc" }
     })
 
@@ -120,7 +125,5 @@ export async function GET() {
       { error: "Terjadi kesalahan server" },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

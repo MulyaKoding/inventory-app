@@ -37,20 +37,21 @@ model Product {
 }
 
 model Store {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  storeId     String   @unique
-  storeName   String
-  storeType   String
-  storePhone  String
-  storeEmail  String?
-  storeAddress String
-  storeCity   String
-  storeProvince String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  storeId         String   @unique
+  userId          String   @db.ObjectId   // ← tambah ini
+  storeName       String
+  storeType       String
+  storePhone      String
+  storeEmail      String?
+  storeAddress    String
+  storeCity       String
+  storeProvince   String
   storePostalCode String?
-  status      String   @default("active")
-  owner       Owner?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status          String   @default("active")
+  owner           Owner?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("stores")
 }
