@@ -686,7 +686,6 @@ export default function ResetPasswordPage() {
               </>
             )}
 
-            {/* STEP 3: NEW PASSWORD */}
             {step === "newpass" && (
               <>
                 <div style={{ marginBottom: 28 }}>
