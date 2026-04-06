@@ -546,13 +546,14 @@ export default function ResetPasswordPage() {
                     alt="WhatsApp"
                     width={64}
                     height={64}
-                    priority={true}
+                    priority
                     style={{
                       borderRadius: 16,
                       margin: "0 auto 16px",
                       display: "block",
                       objectFit: "contain"
                     }}
+                    unoptimized={true}
                   />
                   <h1 className="rp-form-title" style={{ fontSize: 26 }}>
                     Verifikasi WhatsApp
