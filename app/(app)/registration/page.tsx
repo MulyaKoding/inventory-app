@@ -344,26 +344,36 @@ export default function RegistrationPage() {
     setOcrStatus("scanning")
     setOcrError("")
     try {
-      // ── Step 1: OCR dulu ──
+      // Buat File sekali, pakai untuk kedua request
+      const ktpFile = new File([blob], "ktp.jpg", { type: mimeType })
+
+      // ── Step 1: OCR ──
       const ocrForm = new FormData()
-      ocrForm.append("ktp", new File([blob], "ktp.jpg", { type: mimeType }))
+      ocrForm.append("ktp", ktpFile)
       const ocrRes = await fetch("/api/ocr", { method: "POST", body: ocrForm })
       const ocrResult = await ocrRes.json()
       if (!ocrRes.ok) throw new Error(ocrResult.error || "Gagal memproses KTP")
 
-      // ── Step 2: Upload ke Cloudinary (base64) ──
+      // ── Step 2: Upload ke Cloudinary ──
+      // PENTING: Buat File baru lagi dari blob yang sama
+      // karena File pertama sudah di-consume oleh fetch sebelumnya
+      const ktpFile2 = new File([blob], "ktp.jpg", { type: mimeType })
       const uploadForm = new FormData()
-      uploadForm.append("file", new File([blob], "ktp.jpg", { type: mimeType }))
+      uploadForm.append("file", ktpFile2)
+
       const uploadRes = await fetch("/api/upload/ktp", {
         method: "POST",
         body: uploadForm
       })
       const uploadResult = await uploadRes.json()
 
-      // Kalau upload gagal, tetap lanjut tapi tanpa URL gambar
       const ktpImageUrl = uploadRes.ok ? uploadResult.url : ""
       if (!uploadRes.ok) {
-        console.warn("Upload KTP gagal:", uploadResult.error)
+        console.warn(
+          "Upload KTP gagal:",
+          uploadResult.error,
+          uploadResult.detail
+        )
       }
 
       // ── Step 3: Set data owner ──
