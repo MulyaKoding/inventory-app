@@ -1,10 +1,12 @@
+// app/(register)/page.tsx  ← ganti isi file register kamu dengan ini
+
 "use client"
 
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
-type Step = "form" | "otp" | "done"
+type Step = "form" | "otp"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,11 +43,9 @@ export default function RegisterPage() {
     }, 1000)
   }
 
-  // STEP 1: Submit form → kirim OTP
   const handleSendOTP = async (e: React.MouseEvent) => {
     e.preventDefault()
     setError("")
-
     if (!form.name || !form.email || !form.phone || !form.password) {
       setError("Semua field wajib diisi")
       return
@@ -58,7 +58,6 @@ export default function RegisterPage() {
       setError("Password minimal 8 karakter")
       return
     }
-
     setLoading(true)
     try {
       const res = await fetch("/api/auth/send-otp", {
@@ -71,7 +70,6 @@ export default function RegisterPage() {
         setError(data.error)
         return
       }
-
       setStep("otp")
       startCountdown()
       setSuccess(`OTP dikirim ke WhatsApp ${form.phone}`)
@@ -85,15 +83,12 @@ export default function RegisterPage() {
   const handleVerifyAndRegister = async (e: React.MouseEvent) => {
     e.preventDefault()
     setError("")
-
     if (otp.length !== 6) {
       setError("Masukkan 6 digit OTP")
       return
     }
-
     setLoading(true)
     try {
-      // Verifikasi OTP
       const verifyRes = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,8 +99,6 @@ export default function RegisterPage() {
         setError(verifyData.error)
         return
       }
-
-      // Register user
       const regRes = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,7 +114,6 @@ export default function RegisterPage() {
         setError(regData.error)
         return
       }
-
       setSuccess("Registrasi berhasil! Mengarahkan ke login...")
       setTimeout(() => router.push("/login"), 1500)
     } catch {
@@ -155,35 +147,87 @@ export default function RegisterPage() {
     }
   }
 
-  // Styles sama seperti sebelumnya, tambah style OTP
-  const otpInputStyle: React.CSSProperties = {
-    width: "100%",
-    height: 48,
-    padding: "0 16px",
-    background: "#f8fafc",
-    border: "1.5px solid #e2e8f0",
-    borderRadius: 10,
-    fontSize: 24,
-    fontWeight: 800,
-    textAlign: "center",
-    letterSpacing: "0.5em",
-    fontFamily: "'Nunito', sans-serif",
-    color: "#0f172a",
-    outline: "none"
-  }
-
   return (
     <>
       <style>{`
-        /* ... semua style lama kamu tetap sama ... */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes dotBounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.4; } 40% { transform: translateY(-5px); opacity: 1; } }
+        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.7); opacity: 0; } }
+        @keyframes gridPan { from { background-position: 0 0; } to { background-position: 48px 48px; } }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
         .rg-root { display: flex; min-height: 100vh; font-family: 'Nunito', sans-serif; }
-        .rg-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; background: #fff; overflow-y: auto; }
+
+        /* ── LEFT — sama persis dengan login ── */
+        .rg-left {
+          position: relative; width: 52%; min-height: 100vh;
+          background: linear-gradient(160deg, #060b1a 0%, #0c1733 30%, #0f2050 60%, #1e3a8a 100%);
+          display: flex; flex-direction: column; overflow: hidden;
+        }
+        .rg-left-grid {
+          position: absolute; inset: 0; pointer-events: none;
+          background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+          background-size: 48px 48px; animation: gridPan 8s linear infinite;
+        }
+        .rg-left-glow { position: absolute; top: -120px; right: -120px; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,.22) 0%, transparent 70%); pointer-events: none; }
+        .rg-left-glow2 { position: absolute; bottom: -80px; left: -80px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(30,58,138,.18) 0%, transparent 70%); pointer-events: none; }
+
+        .rg-ticker-wrap { position: absolute; top: 0; left: 0; right: 0; background: rgba(0,0,0,.25); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,.08); height: 36px; overflow: hidden; display: flex; align-items: center; }
+        .rg-ticker-track { display: flex; animation: ticker 28s linear infinite; white-space: nowrap; }
+        .rg-ticker-item { display: inline-flex; align-items: center; gap: 14px; padding: 0 36px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: .06em; }
+        .rg-ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: #60a5fa; }
+
+        .rg-brand-area { position: relative; z-index: 2; padding: 52px 52px 0; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .rg-brand-mark { width: 40px; height: 40px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(59,130,246,.35); }
+        .rg-brand-mark span { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 11px; color: #fff; }
+        .rg-brand-name { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: .06em; }
+        .rg-brand-sub { font-size: 11px; color: rgba(255,255,255,.4); font-family: 'Nunito', sans-serif; font-weight: 600; margin-top: 2px; }
+
+        .rg-hero { position: relative; z-index: 2; padding: 40px 52px 0; flex: 1; }
+        .rg-hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.08); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.15); border-radius: 100px; padding: 6px 14px; margin-bottom: 24px; }
+        .rg-hero-tag-dot { width: 6px; height: 6px; border-radius: 50%; background: #60a5fa; position: relative; }
+        .rg-hero-tag-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; background: rgba(96,165,250,.4); animation: pulse-ring 1.8s ease-out infinite; }
+        .rg-hero-tag-text { color: rgba(255,255,255,.85); font-size: 11px; font-family: 'Nunito', sans-serif; font-weight: 800; letter-spacing: .05em; }
+        .rg-hero-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; letter-spacing: -.02em; color: #fff; margin-bottom: 14px; }
+        .rg-hero-title em { font-style: normal; color: #60a5fa; }
+        .rg-hero-desc { font-size: 14px; color: rgba(255,255,255,.6); line-height: 1.7; max-width: 360px; font-family: 'Nunito', sans-serif; font-weight: 500; margin-bottom: 28px; }
+
+        /* Visual mock */
+        .rg-visual { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; overflow: hidden; background: rgba(0,0,0,.2); margin-bottom: 24px; }
+        .rg-visual-header { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,.15); }
+        .rg-visual-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .rg-visual-title { font-size: 11px; color: rgba(255,255,255,.3); font-family: 'Nunito', sans-serif; font-weight: 700; margin-left: 4px; }
+        .rg-visual-body { padding: 12px; display: flex; flex-direction: column; gap: 7px; }
+        .rg-visual-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: rgba(255,255,255,.04); border-radius: 8px; border: 1px solid rgba(255,255,255,.06); }
+        .rg-visual-row-left { display: flex; align-items: center; gap: 10px; }
+        .rg-visual-row-ico { width: 26px; height: 26px; border-radius: 6px; background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+        .rg-visual-row-name { font-size: 12px; color: rgba(255,255,255,.65); font-family: 'Nunito', sans-serif; font-weight: 700; }
+        .rg-visual-row-stock { font-size: 10px; color: rgba(255,255,255,.25); font-family: 'Nunito', sans-serif; font-weight: 600; }
+        .rg-visual-badge { font-size: 10px; font-family: 'Nunito', sans-serif; font-weight: 800; padding: 2px 9px; border-radius: 100px; }
+        .rg-visual-badge.ok { background: rgba(29,78,216,.15); color: #93c5fd; }
+        .rg-visual-badge.warn { background: rgba(245,158,11,.12); color: #fde68a; }
+        .rg-visual-badge.low { background: rgba(239,68,68,.12); color: #fca5a5; }
+
+        /* Steps */
+        .rg-steps { display: flex; flex-direction: column; gap: 10px; }
+        .rg-step { display: flex; align-items: flex-start; gap: 14px; }
+        .rg-step-num { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3); display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: 'Nunito', sans-serif; font-weight: 900; color: #93c5fd; margin-top: 2px; }
+        .rg-step-text { font-size: 13px; color: rgba(255,255,255,.5); font-family: 'Nunito', sans-serif; font-weight: 600; line-height: 1.5; }
+        .rg-step-text strong { color: rgba(255,255,255,.8); font-weight: 800; }
+
+        .rg-bottom-bar { position: relative; z-index: 2; padding: 22px 52px; border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-between; }
+        .rg-bottom-trust { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,.35); font-family: 'Nunito', sans-serif; font-weight: 700; }
+        .rg-bottom-trust-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+        .rg-bottom-version { font-size: 11px; color: rgba(255,255,255,.2); font-family: 'Nunito', sans-serif; font-weight: 700; }
+
+        /* ── RIGHT ── */
+        .rg-right { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 40px; background: #fff; overflow-y: auto; }
         .rg-card { width: 100%; max-width: 400px; animation: fadeUp .5s ease forwards; }
-        .rg-form-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 28px; color: #0f172a; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 6px; }
+
+        .rg-form-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 30px; color: #0f172a; letter-spacing: -.02em; line-height: 1.2; margin-bottom: 6px; }
         .rg-form-sub { font-size: 14px; color: #64748b; font-family: 'Nunito', sans-serif; font-weight: 500; line-height: 1.5; margin-bottom: 24px; }
         .rg-lbl { display: block; font-size: 13px; font-weight: 700; color: #374151; font-family: 'Nunito', sans-serif; margin-bottom: 7px; }
         .rg-field { margin-bottom: 14px; }
@@ -196,7 +240,7 @@ export default function RegisterPage() {
         .rg-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'Nunito', sans-serif; margin-bottom: 14px; text-align: center; }
         .rg-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: 'Nunito', sans-serif; margin-bottom: 14px; text-align: center; }
         .rg-btn { width: 100%; height: 50px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 24px rgba(59,130,246,.3); transition: transform .2s; margin-top: 6px; }
-        .rg-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .rg-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59,130,246,.4); }
         .rg-btn:disabled { opacity: .7; cursor: not-allowed; }
         .rg-dots { display: flex; gap: 5px; }
         .rg-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: dotBounce 1s ease-in-out infinite; }
@@ -204,16 +248,205 @@ export default function RegisterPage() {
         .rg-foot a { color: #1e3a8a; text-decoration: none; font-weight: 800; }
         .rg-strength { display: flex; gap: 4px; margin-top: 7px; }
         .rg-strength-bar { flex: 1; height: 3px; border-radius: 2px; background: #e2e8f0; transition: background .3s; }
-        @media (max-width: 900px) { .rg-right { padding: 32px 20px 48px; } }
+
+        /* Mobile */
+        .rg-topbar { display: none; background: linear-gradient(135deg, #060b1a, #1e3a8a); padding: 14px 20px; align-items: center; gap: 12px; cursor: pointer; }
+        .rg-topbar-mark { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .rg-topbar-mark span { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 10px; color: #fff; }
+        .rg-topbar-name { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 15px; color: #fff; }
+        .rg-topbar-sub { font-size: 10px; color: rgba(255,255,255,.4); font-family: 'Nunito', sans-serif; font-weight: 600; }
+
+        @media (max-width: 900px) {
+          .rg-left { display: none; }
+          .rg-topbar { display: flex; }
+          .rg-root { flex-direction: column; }
+          .rg-right { padding: 32px 20px 48px; align-items: flex-start; }
+          .rg-card { max-width: 100%; }
+        }
+        @media (max-width: 480px) {
+          .rg-right { padding: 24px 16px 40px; }
+          .rg-form-title { font-size: 24px; }
+          .rg-inp { height: 44px; }
+          .rg-btn { height: 46px; }
+        }
       `}</style>
 
       <div className="rg-root">
+        {/* Mobile topbar */}
+        <div className="rg-topbar" onClick={() => router.push("/")}>
+          <div className="rg-topbar-mark">
+            <span>INV</span>
+          </div>
+          <div>
+            <div className="rg-topbar-name">STOCKR</div>
+            <div className="rg-topbar-sub">Inventory Management System</div>
+          </div>
+        </div>
+
+        {/* ── LEFT PANEL ── */}
+        <div className="rg-left">
+          <div className="rg-left-grid" />
+          <div className="rg-left-glow" />
+          <div className="rg-left-glow2" />
+
+          {/* Ticker */}
+          <div className="rg-ticker-wrap">
+            <div className="rg-ticker-track">
+              {[...Array(2)].map((_, i) => (
+                <span key={i}>
+                  {[
+                    "DAFTAR GRATIS",
+                    "TANPA KARTU KREDIT",
+                    "OTP WHATSAPP",
+                    "DATA AMAN",
+                    "MULAI 2 MENIT"
+                  ].map((t, j) => (
+                    <span key={j} className="rg-ticker-item">
+                      <span className="rg-ticker-dot" />
+                      {t}
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Brand */}
+          <div className="rg-brand-area" onClick={() => router.push("/")}>
+            <div className="rg-brand-mark">
+              <span>INV</span>
+            </div>
+            <div>
+              <div className="rg-brand-name">STOCKR</div>
+              <div className="rg-brand-sub">Inventory Management System</div>
+            </div>
+          </div>
+
+          {/* Hero */}
+          <div className="rg-hero">
+            <div className="rg-hero-tag">
+              <span className="rg-hero-tag-dot" />
+              <span className="rg-hero-tag-text">Gratis Selamanya</span>
+            </div>
+            <h1 className="rg-hero-title">
+              Mulai Kelola
+              <br />
+              <em>Inventori Kamu.</em>
+            </h1>
+            <p className="rg-hero-desc">
+              Buat akun gratis dan langsung akses semua fitur manajemen stok,
+              pesanan, dan laporan bisnis.
+            </p>
+
+            {/* Visual mock */}
+            <div className="rg-visual">
+              <div className="rg-visual-header">
+                <span
+                  className="rg-visual-dot"
+                  style={{ background: "#ef4444" }}
+                />
+                <span
+                  className="rg-visual-dot"
+                  style={{ background: "#f59e0b" }}
+                />
+                <span
+                  className="rg-visual-dot"
+                  style={{ background: "#22c55e" }}
+                />
+                <span className="rg-visual-title">stockr / inventory</span>
+              </div>
+              <div className="rg-visual-body">
+                {[
+                  {
+                    ico: "📦",
+                    name: "Kaos Polos Putih",
+                    stock: "124 pcs",
+                    status: "ok",
+                    badge: "In Stock"
+                  },
+                  {
+                    ico: "👟",
+                    name: "Sepatu Running X9",
+                    stock: "8 pcs",
+                    status: "warn",
+                    badge: "Low Stock"
+                  },
+                  {
+                    ico: "🎒",
+                    name: "Tas Ransel Urban",
+                    stock: "0 pcs",
+                    status: "low",
+                    badge: "Habis"
+                  }
+                ].map((r) => (
+                  <div key={r.name} className="rg-visual-row">
+                    <div className="rg-visual-row-left">
+                      <div className="rg-visual-row-ico">{r.ico}</div>
+                      <div>
+                        <div className="rg-visual-row-name">{r.name}</div>
+                        <div className="rg-visual-row-stock">{r.stock}</div>
+                      </div>
+                    </div>
+                    <span className={`rg-visual-badge ${r.status}`}>
+                      {r.badge}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Steps */}
+            <div className="rg-steps">
+              {[
+                {
+                  n: "01",
+                  t: (
+                    <>
+                      <strong>Daftar gratis</strong> dalam 2 menit
+                    </>
+                  )
+                },
+                {
+                  n: "02",
+                  t: (
+                    <>
+                      Verifikasi via <strong>WhatsApp OTP</strong>
+                    </>
+                  )
+                },
+                {
+                  n: "03",
+                  t: (
+                    <>
+                      <strong>Monitor & analisis</strong> dari dasbor
+                    </>
+                  )
+                }
+              ].map((s) => (
+                <div key={s.n} className="rg-step">
+                  <div className="rg-step-num">{s.n}</div>
+                  <div className="rg-step-text">{s.t}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rg-bottom-bar">
+            <div className="rg-bottom-trust">
+              <span className="rg-bottom-trust-dot" />
+              Gratis, tanpa kartu kredit
+            </div>
+            <span className="rg-bottom-version">v2.4.1 · 2026</span>
+          </div>
+        </div>
+
+        {/* ── RIGHT PANEL ── */}
         <div className="rg-right">
           <div className="rg-card">
-            {/* ── STEP: FORM ── */}
+            {/* STEP: FORM */}
             {step === "form" && (
               <>
-                <div className="rg-form-head" style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 28 }}>
                   <h1 className="rg-form-title">Buat Akun</h1>
                   <p className="rg-form-sub">
                     Isi data di bawah untuk mulai menggunakan platform.
@@ -266,7 +499,6 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Field HP baru */}
                 <div className="rg-field">
                   <label className="rg-lbl">Nomor WhatsApp</label>
                   <div className="rg-inp-wrap">
@@ -458,14 +690,31 @@ export default function RegisterPage() {
                 <p className="rg-foot">
                   Sudah punya akun? <Link href="/login">Masuk di sini</Link>
                 </p>
+                <p
+                  style={{
+                    textAlign: "center",
+                    marginTop: 10,
+                    fontSize: 12,
+                    color: "#94a3b8",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 600
+                  }}
+                >
+                  Dengan mendaftar kamu menyetujui{" "}
+                  <a
+                    href="#"
+                    style={{ color: "#1e3a8a", textDecoration: "none" }}
+                  >
+                    Syarat & Ketentuan
+                  </a>
+                </p>
               </>
             )}
 
-            {/* ── STEP: OTP ── */}
+            {/* STEP: OTP */}
             {step === "otp" && (
               <>
-                {/* Ikon WA */}
-                <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ textAlign: "center", marginBottom: 24 }}>
                   <div
                     style={{
                       width: 64,
@@ -476,12 +725,12 @@ export default function RegisterPage() {
                       alignItems: "center",
                       justifyContent: "center",
                       margin: "0 auto 16px",
-                      fontSize: 30
+                      fontSize: 28
                     }}
                   >
                     💬
                   </div>
-                  <h1 className="rg-form-title" style={{ fontSize: 24 }}>
+                  <h1 className="rg-form-title" style={{ fontSize: 26 }}>
                     Verifikasi WhatsApp
                   </h1>
                   <p className="rg-form-sub">
@@ -504,7 +753,21 @@ export default function RegisterPage() {
                     Masukkan 6 Digit OTP
                   </label>
                   <input
-                    style={otpInputStyle}
+                    style={{
+                      width: "100%",
+                      height: 56,
+                      padding: "0 16px",
+                      background: "#f8fafc",
+                      border: "1.5px solid #e2e8f0",
+                      borderRadius: 10,
+                      fontSize: 28,
+                      fontWeight: 800,
+                      textAlign: "center",
+                      letterSpacing: "0.5em",
+                      fontFamily: "'Nunito', sans-serif",
+                      color: "#0f172a",
+                      outline: "none"
+                    }}
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
@@ -545,11 +808,10 @@ export default function RegisterPage() {
                       />
                     </span>
                   ) : (
-                    "Verifikasi & Daftar"
+                    "Verifikasi & Daftar ✓"
                   )}
                 </button>
 
-                {/* Resend + back */}
                 <div
                   style={{
                     display: "flex",
