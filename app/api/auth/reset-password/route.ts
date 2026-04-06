@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Cari user berdasarkan phone
-    const user = await prisma.user.findUnique({
-      where: { phone: cleanPhone }
-    })
+    const user =
+      (await prisma.user.findUnique({ where: { phone: cleanPhone } })) ||
+      (await prisma.user.findUnique({ where: { phone: phone } }))
 
     if (!user) {
       return NextResponse.json(
