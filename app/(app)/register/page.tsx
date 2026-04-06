@@ -5,6 +5,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 type Step = "form" | "otp"
 
@@ -25,6 +26,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [countdown, setCountdown] = useState(0)
+  const imageWa =
+    "https://res.cloudinary.com/dp0dtct3v/image/upload/v1775458567/whatsapp_objiub.png"
 
   const handleChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -728,7 +731,19 @@ export default function RegisterPage() {
                       fontSize: 28
                     }}
                   >
-                    💬
+                    <Image
+                      src={imageWa}
+                      alt="ic_whatsapp"
+                      height={64}
+                      width={64}
+                      priority={true}
+                      style={{
+                        borderRadius: 16,
+                        margin: "0 auto 16px",
+                        display: "block",
+                        objectFit: "contain"
+                      }}
+                    />
                   </div>
                   <h1 className="rg-form-title" style={{ fontSize: 26 }}>
                     Verifikasi WhatsApp

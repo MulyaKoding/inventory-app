@@ -5,6 +5,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 type Step = "request" | "otp" | "newpass" | "done"
 
@@ -21,6 +22,9 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [countdown, setCountdown] = useState(0)
+
+  const imageWa =
+    "https://res.cloudinary.com/dp0dtct3v/image/upload/v1775458567/whatsapp_objiub.png"
 
   const startCountdown = () => {
     setCountdown(60)
@@ -550,7 +554,19 @@ export default function ResetPasswordPage() {
                       fontSize: 28
                     }}
                   >
-                    💬
+                    <Image
+                      src={imageWa}
+                      alt="WhatsApp"
+                      width={64}
+                      height={64}
+                      priority={true}
+                      style={{
+                        borderRadius: 16,
+                        margin: "0 auto 16px",
+                        display: "block",
+                        objectFit: "contain"
+                      }}
+                    />
                   </div>
                   <h1 className="rp-form-title" style={{ fontSize: 26 }}>
                     Verifikasi WhatsApp
