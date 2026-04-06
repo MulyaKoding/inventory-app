@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email, phone, password } = await req.json()
 
-    if (!name || !email || !phone || !password) {
+    if (!name || !email || !password) {
       return NextResponse.json(
         { error: "Semua field wajib diisi" },
         { status: 400 }
@@ -20,22 +20,26 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const cleanPhone = phone.replace(/\D/g, "").replace(/^0/, "62")
+    const cleanPhone = phone
+      ? phone.replace(/\D/g, "").replace(/^0/, "62")
+      : null
 
-    // Pastikan OTP sudah diverifikasi
-    const otpRecord = await prisma.otpVerification.findFirst({
-      where: { phone: cleanPhone, verified: true },
-      orderBy: { createdAt: "desc" }
-    })
+    // Cek OTP hanya kalau ada phone
+    if (cleanPhone) {
+      const otpRecord = await prisma.otpVerification.findFirst({
+        where: { phone: cleanPhone, verified: true },
+        orderBy: { createdAt: "desc" }
+      })
 
-    if (!otpRecord) {
-      return NextResponse.json(
-        { error: "Nomor HP belum diverifikasi, verifikasi OTP dulu" },
-        { status: 400 }
-      )
+      if (!otpRecord) {
+        return NextResponse.json(
+          { error: "Nomor HP belum diverifikasi" },
+          { status: 400 }
+        )
+      }
     }
 
-    // Cek email & phone sudah terdaftar
+    // Cek email sudah terdaftar
     const existingEmail = await prisma.user.findUnique({ where: { email } })
     if (existingEmail) {
       return NextResponse.json(
@@ -44,14 +48,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const existingPhone = await prisma.user.findUnique({
-      where: { phone: cleanPhone }
-    })
-    if (existingPhone) {
-      return NextResponse.json(
-        { error: "Nomor HP sudah terdaftar" },
-        { status: 409 }
-      )
+    // Cek phone sudah terdaftar (kalau ada)
+    if (cleanPhone) {
+      const existingPhone = await prisma.user.findUnique({
+        where: { phone: cleanPhone }
+      })
+      if (existingPhone) {
+        return NextResponse.json(
+          { error: "Nomor HP sudah terdaftar" },
+          { status: 409 }
+        )
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 12)
@@ -62,12 +69,14 @@ export async function POST(req: NextRequest) {
         email,
         phone: cleanPhone,
         password: hashedPassword,
-        isVerified: true
+        isVerified: cleanPhone ? true : false
       }
     })
 
     // Hapus OTP setelah berhasil register
-    await prisma.otpVerification.deleteMany({ where: { phone: cleanPhone } })
+    if (cleanPhone) {
+      await prisma.otpVerification.deleteMany({ where: { phone: cleanPhone } })
+    }
 
     return NextResponse.json(
       { message: "Registrasi berhasil", userId: user.id },
