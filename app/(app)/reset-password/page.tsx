@@ -690,22 +690,6 @@ export default function ResetPasswordPage() {
             {step === "newpass" && (
               <>
                 <div style={{ marginBottom: 28 }}>
-                  <div
-                    style={{
-                      width: 52,
-                      height: 52,
-                      background: "linear-gradient(135deg, #0f7558, #22c55e)",
-                      borderRadius: 14,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 16,
-                      fontSize: 24,
-                      boxShadow: "0 8px 20px rgba(34,197,94,.3)"
-                    }}
-                  >
-                    🛡️
-                  </div>
                   <h1 className="rp-form-title">Password Baru</h1>
                   <p className="rp-form-sub">
                     Nomor terverifikasi! Sekarang buat password baru yang kuat
