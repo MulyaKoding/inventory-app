@@ -1208,12 +1208,15 @@ export default function RegistrationPage() {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: { xs: "95vw", sm: 520 },
+            maxHeight: { xs: "90vh", sm: "85vh" },
             bgcolor: p.bgPaper,
             border: `1px solid ${p.border}`,
             borderRadius: "10px",
             boxShadow: p.menuShadow,
             outline: "none",
-            overflow: "hidden"
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column"
           }}
         >
           {/* Modal Header */}
@@ -1432,7 +1435,8 @@ export default function RegistrationPage() {
                     bgcolor: "#000",
                     borderRadius: "8px",
                     overflow: "hidden",
-                    aspectRatio: "16/9",
+                    aspectRatio: { xs: "4/3", sm: "16/9" },
+                    minHeight: { xs: 220, sm: "auto" },
                     mb: 1.5
                   }}
                 >
