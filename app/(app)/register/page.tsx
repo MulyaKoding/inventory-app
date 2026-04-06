@@ -82,7 +82,6 @@ export default function RegisterPage() {
     }
   }
 
-  // STEP 2: Verifikasi OTP → register
   const handleVerifyAndRegister = async (e: React.MouseEvent) => {
     e.preventDefault()
     setError("")
