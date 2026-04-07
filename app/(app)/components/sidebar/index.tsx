@@ -14,7 +14,6 @@ import {
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 
-// ── ICON ──────────────────────────────────────────────────────────────────────
 const Icon = ({
   d,
   size = 16,
@@ -38,7 +37,6 @@ const Icon = ({
   </svg>
 )
 
-// ── NAV ITEMS ─────────────────────────────────────────────────────────────────
 export const NAV_ITEMS = [
   {
     label: "Dashboard",
@@ -67,15 +65,12 @@ export const NAV_ITEMS = [
   }
 ]
 
-// ── PROPS ─────────────────────────────────────────────────────────────────────
 interface SidebarProps {
-  p: Record<string, string>
-  isDark: boolean
+  isDark?: boolean
   T?: string
 }
 
-// ── COMPONENT ─────────────────────────────────────────────────────────────────
-export default function Sidebar({ p, isDark, T = "0.3s ease" }: SidebarProps) {
+export default function Sidebar({ isDark, T = "0.3s ease" }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -99,51 +94,109 @@ export default function Sidebar({ p, isDark, T = "0.3s ease" }: SidebarProps) {
   const avatarLetter = userName.charAt(0).toUpperCase()
 
   return (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background:
+          "linear-gradient(160deg, #060b1a 0%, #0c1733 40%, #0f2050 70%, #1e3a8a 100%)",
+        position: "relative",
+        overflow: "hidden",
+        // Subtle animated grid overlay like the login left panel
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          inset: 0,
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+          pointerEvents: "none",
+          zIndex: 0
+        },
+        // Top-right glow
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          top: -60,
+          right: -60,
+          width: 220,
+          height: 220,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(59,130,246,.25) 0%, transparent 70%)",
+          pointerEvents: "none",
+          zIndex: 0
+        }
+      }}
+    >
       {/* ── LOGO ── */}
       <Box
-        sx={{ px: 3, py: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          position: "relative",
+          zIndex: 1
+        }}
       >
         <Box
           sx={{
-            width: 32,
-            height: 32,
-            bgcolor: "#087463",
-            borderRadius: "4px",
+            width: 34,
+            height: 34,
+            background: "linear-gradient(135deg, #1e3a8a, #3b82f6)",
+            borderRadius: "8px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            flexShrink: 0
+            flexShrink: 0,
+            boxShadow: "0 4px 12px rgba(59,130,246,.4)"
           }}
         >
           <Typography
             sx={{
-              color: "#0D0D0D",
+              color: "#fff",
               fontWeight: 900,
-              fontSize: 14,
-              fontFamily: "'DM Mono', monospace"
+              fontSize: 11,
+              fontFamily: "'Nunito', sans-serif",
+              letterSpacing: "0.05em"
             }}
           >
             INV
           </Typography>
         </Box>
-        <Typography
-          sx={{
-            color: p.textPrimary,
-            fontWeight: 700,
-            fontSize: 15,
-            letterSpacing: "0.05em",
-            transition: `color ${T}`
-          }}
-        >
-          STOCKR
-        </Typography>
+        <Box>
+          <Typography
+            sx={{
+              color: "#fff",
+              fontWeight: 900,
+              fontSize: 15,
+              letterSpacing: "0.06em",
+              fontFamily: "'Nunito', sans-serif",
+              lineHeight: 1.2
+            }}
+          >
+            STOCKR
+          </Typography>
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,.4)",
+              fontSize: 10,
+              fontFamily: "'Nunito', sans-serif",
+              fontWeight: 600
+            }}
+          >
+            Inventory Management
+          </Typography>
+        </Box>
       </Box>
 
-      <Divider sx={{ borderColor: p.border, mb: 1 }} />
+      <Divider sx={{ borderColor: "rgba(255,255,255,.08)", mb: 1 }} />
 
       {/* ── NAV ── */}
-      <List dense sx={{ px: 1, flex: 1 }}>
+      <List dense sx={{ px: 1, flex: 1, position: "relative", zIndex: 1 }}>
         {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/")
@@ -152,15 +205,18 @@ export default function Sidebar({ p, isDark, T = "0.3s ease" }: SidebarProps) {
               <ListItemButton
                 onClick={() => router.push(item.href)}
                 sx={{
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   px: 1.5,
                   py: 1,
-                  bgcolor: isActive ? p.activeNavBg : "transparent",
-                  border: `1px solid ${isActive ? p.activeNavBorder : "transparent"}`,
+                  bgcolor: isActive ? "rgba(59,130,246,.2)" : "transparent",
+                  border: `1px solid ${isActive ? "rgba(59,130,246,.4)" : "transparent"}`,
                   cursor: "pointer",
-                  transition: `background-color ${T}, border-color ${T}`,
+                  transition: `all ${T}`,
                   "&:hover": {
-                    bgcolor: isActive ? p.activeNavBg : p.hoverBg
+                    bgcolor: isActive
+                      ? "rgba(59,130,246,.25)"
+                      : "rgba(255,255,255,.07)",
+                    border: `1px solid ${isActive ? "rgba(59,130,246,.4)" : "rgba(255,255,255,.1)"}`
                   }
                 }}
               >
@@ -168,18 +224,29 @@ export default function Sidebar({ p, isDark, T = "0.3s ease" }: SidebarProps) {
                   <Icon
                     d={item.icon}
                     size={16}
-                    color={isActive ? "#087463" : p.textMuted}
+                    color={isActive ? "#60a5fa" : "rgba(255,255,255,.4)"}
                   />
                 </ListItemIcon>
                 <ListItemText
                   primary={item.label}
                   primaryTypographyProps={{
                     fontSize: 13,
-                    fontWeight: isActive ? 700 : 400,
-                    color: isActive ? "#087463" : p.textSecondary,
-                    fontFamily: "'DM Mono', monospace"
+                    fontWeight: isActive ? 800 : 600,
+                    color: isActive ? "#fff" : "rgba(255,255,255,.55)",
+                    fontFamily: "'Nunito', sans-serif"
                   }}
                 />
+                {isActive && (
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      bgcolor: "#60a5fa",
+                      flexShrink: 0
+                    }}
+                  />
+                )}
               </ListItemButton>
             </ListItem>
           )
@@ -190,23 +257,33 @@ export default function Sidebar({ p, isDark, T = "0.3s ease" }: SidebarProps) {
       <Box
         sx={{
           px: 2,
-          py: 3,
-          borderTop: `1px solid ${p.border}`,
-          transition: `border-color ${T}`
+          py: 2.5,
+          borderTop: "1px solid rgba(255,255,255,.08)",
+          position: "relative",
+          zIndex: 1
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Avatar
-            sx={{ width: 32, height: 32, bgcolor: "#FF6B35", fontSize: 12 }}
+            sx={{
+              width: 32,
+              height: 32,
+              bgcolor: "#FF6B35",
+              fontSize: 12,
+              fontFamily: "'Nunito', sans-serif",
+              fontWeight: 800,
+              boxShadow: "0 2px 8px rgba(255,107,53,.4)"
+            }}
           >
             {avatarLetter}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
             <Typography
               sx={{
-                color: p.textPrimary,
+                color: "#fff",
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 700,
+                fontFamily: "'Nunito', sans-serif",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap"
@@ -216,9 +293,11 @@ export default function Sidebar({ p, isDark, T = "0.3s ease" }: SidebarProps) {
             </Typography>
             <Typography
               sx={{
-                color: p.textMuted,
+                color: "rgba(255,255,255,.35)",
                 fontSize: 10,
-                textTransform: "capitalize"
+                textTransform: "capitalize",
+                fontFamily: "'Nunito', sans-serif",
+                fontWeight: 600
               }}
             >
               {userRole}
