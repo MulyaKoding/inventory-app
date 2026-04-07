@@ -809,7 +809,7 @@ export default function MainPage() {
   const drawerPaperSx = (pt: boolean) => ({
     width: DRAWER_WIDTH,
     boxSizing: "border-box" as const,
-    bgcolor: p.sidebarBg,
+    bgcolor: "transparent",
     borderRight: `1px solid ${p.border}`,
     pt: pt ? 1 : 0,
     transition: `background-color ${T}, border-color ${T}`
@@ -837,7 +837,7 @@ export default function MainPage() {
             "& .MuiDrawer-paper": drawerPaperSx(false)
           }}
         >
-          <Sidebar p={p} isDark={isDark} T={T} />
+          <Sidebar isDark={isDark} T={T} />
         </Drawer>
 
         {/* ── SIDEBAR DESKTOP ── */}
@@ -850,7 +850,7 @@ export default function MainPage() {
             "& .MuiDrawer-paper": drawerPaperSx(true)
           }}
         >
-          <Sidebar p={p} isDark={isDark} T={T} />
+          <Sidebar isDark={isDark} T={T} />
         </Drawer>
 
         {/* ── MAIN CONTENT ── */}

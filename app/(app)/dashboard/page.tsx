@@ -374,7 +374,7 @@ export default function DashboardPage() {
             }
           }}
         >
-          <Sidebar p={p} isDark={isDark} T={T} />
+          <Sidebar isDark={isDark} T={T} />
         </Drawer>
 
         {/* ── SIDEBAR DESKTOP ── */}
@@ -394,7 +394,7 @@ export default function DashboardPage() {
             }
           }}
         >
-          <Sidebar p={p} isDark={isDark} T={T} />
+          <Sidebar isDark={isDark} T={T} />
         </Drawer>
 
         {/* ── MAIN CONTENT ── */}

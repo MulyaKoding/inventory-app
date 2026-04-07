@@ -792,12 +792,11 @@ export default function ListTokoPage() {
   const drawerPaperSx = (pt: boolean) => ({
     width: DRAWER_WIDTH,
     boxSizing: "border-box" as const,
-    bgcolor: p.sidebarBg,
+    bgcolor: "transparent",
     borderRight: `1px solid ${p.border}`,
     pt: pt ? 1 : 0,
     transition: `background-color ${T}, border-color ${T}`
   })
-
   useEffect(() => {
     fetchStores()
   }, [])
@@ -916,7 +915,7 @@ export default function ListTokoPage() {
             "& .MuiDrawer-paper": drawerPaperSx(false)
           }}
         >
-          <Sidebar p={p} isDark={isDark} T={T} />
+          <Sidebar isDark={isDark} T={T} />
         </Drawer>
         <Drawer
           variant="permanent"
@@ -927,7 +926,7 @@ export default function ListTokoPage() {
             "& .MuiDrawer-paper": drawerPaperSx(true)
           }}
         >
-          <Sidebar p={p} isDark={isDark} T={T} />
+          <Sidebar isDark={isDark} T={T} />
         </Drawer>
 
         <Box
