@@ -1,5 +1,3 @@
-// app/(register)/page.tsx  ← ganti isi file register kamu dengan ini
-
 "use client"
 
 import { useState } from "react"
