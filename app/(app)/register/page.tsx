@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [countdown, setCountdown] = useState(0)
+  let statusData
   const imageWa =
     "https://res.cloudinary.com/dp0dtct3v/image/upload/v1775458567/whatsapp_objiub.png"
 
@@ -716,33 +717,19 @@ export default function RegisterPage() {
             {step === "otp" && (
               <>
                 <div style={{ textAlign: "center", marginBottom: 24 }}>
-                  <div
+                  <Image
+                    src={imageWa}
+                    alt="ic_whatsapp"
+                    height={64}
+                    width={64}
+                    priority={true}
                     style={{
-                      width: 64,
-                      height: 64,
-                      background: "linear-gradient(135deg,#25D366,#128C7E)",
                       borderRadius: 16,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
                       margin: "0 auto 16px",
-                      fontSize: 28
+                      display: "block",
+                      objectFit: "contain"
                     }}
-                  >
-                    <Image
-                      src={imageWa}
-                      alt="ic_whatsapp"
-                      height={64}
-                      width={64}
-                      priority={true}
-                      style={{
-                        borderRadius: 16,
-                        margin: "0 auto 16px",
-                        display: "block",
-                        objectFit: "contain"
-                      }}
-                    />
-                  </div>
+                  />
                   <h1 className="rg-form-title" style={{ fontSize: 26 }}>
                     Verifikasi WhatsApp
                   </h1>
