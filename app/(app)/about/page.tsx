@@ -43,21 +43,21 @@ const TEAM = [
     name: "Sinta Dwi",
     role: "UI UX Designer",
     initials: "SD",
-    color: "#0c1a3a",
+    color: "#1d4ed8",
     desc: "Membantu ratusan bisnis beralih dari pencatatan manual ke sistem digital dengan lancar."
   },
   {
     name: "Budi Setiawan",
     role: "Frontend Engineer",
     initials: "BS",
-    color: "#0c1a3a",
+    color: "#1d4ed8",
     desc: "Membantu ratusan bisnis beralih dari pencatatan manual ke sistem digital dengan lancar."
   },
   {
     name: "Setiawan Bimo",
     role: "Backend Engineer",
     initials: "SB",
-    color: "#0c1a3a",
+    color: "#2563eb",
     desc: "Membantu ratusan bisnis beralih dari pencatatan manual ke sistem digital dengan lancar."
   },
   {
