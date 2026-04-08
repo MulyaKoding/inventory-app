@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -24,7 +24,20 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [countdown, setCountdown] = useState(0)
-  let statusData
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Enter" || loading) return
+      if (step === "form") {
+        handleSendOTP(e as any)
+      } else if (step === "otp" && otp.length === 6) {
+        handleVerifyAndRegister(e as any)
+      }
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [step, otp, loading, form])
+
   const imageWa =
     "https://res.cloudinary.com/dp0dtct3v/image/upload/v1775458567/whatsapp_objiub.png"
 
