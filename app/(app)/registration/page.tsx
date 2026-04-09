@@ -180,6 +180,7 @@ export default function RegistrationPage() {
   const [markerSource, setMarkerSource] = useState<
     "geo" | "search" | "click" | null
   >(null)
+  const [flyToMarkerTick, setFlyToMarkerTick] = useState(0)
   // ────────────────────────────────────────────────────────────────────────────
 
   const [storeData, setStoreData] = useState<StoreData>({
@@ -624,7 +625,7 @@ export default function RegistrationPage() {
 
   const handleGeoButton = useCallback(() => {
     if (mapMarker) {
-      setMapCenter([...mapMarker] as [number, number])
+      setFlyToMarkerTick((t) => t + 1) // force trigger fly
     } else {
       requestGeolocation()
     }
@@ -1851,6 +1852,7 @@ export default function RegistrationPage() {
                 onRequestGeo={handleGeoButton}
                 isGeoLoading={geoLoading}
                 markerSource={markerSource}
+                flyToMarkerTick={flyToMarkerTick}
               />
             </Box>
 

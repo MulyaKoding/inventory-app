@@ -10,6 +10,7 @@ export interface CanvasMapProps {
   onMapClick: (lat: number, lng: number) => void
   onRequestGeo?: () => void
   isGeoLoading?: boolean
+  flyToMarkerTick?: number
   /** "geo" → hijau+ripple | "search" → oranye+ripple | "click" → biru */
   markerSource?: "geo" | "search" | "click" | null
 }
@@ -91,7 +92,8 @@ export default function CanvasMap({
   onMapClick,
   onRequestGeo,
   isGeoLoading = false,
-  markerSource = null
+  markerSource = null,
+  flyToMarkerTick = 0
 }: CanvasMapProps) {
   const cvs = useRef<HTMLCanvasElement>(null)
   const wrap = useRef<HTMLDivElement>(null)
@@ -145,6 +147,21 @@ export default function CanvasMap({
     }
     srRef.current()
   }, [center])
+
+  useEffect(() => {
+    if (!flyToMarkerTick || !markerR.current) return
+    flyR.current = {
+      fLat: cR.current[0],
+      fLon: cR.current[1],
+      fZ: zR.current,
+      tLat: markerR.current[0],
+      tLon: markerR.current[1],
+      tZ: Math.max(zR.current, 15),
+      t0: performance.now(),
+      dur: 700
+    }
+    srRef.current()
+  }, [flyToMarkerTick])
 
   useEffect(() => {
     markerR.current = marker
