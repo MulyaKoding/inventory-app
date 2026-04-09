@@ -14,11 +14,7 @@ import {
 import Header from "../components/header/page"
 import Sidebar from "../components/sidebar"
 import { useTheme } from "../hooks/useTheme"
-
-// ── Leaflet (dynamic import agar tidak SSR) ──────────────────────────────────
-import dynamic from "next/dynamic"
-const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false })
-// ────────────────────────────────────────────────────────────────────────────
+import CanvasMap from "./CanvasMap"
 
 const DRAWER_WIDTH = 220
 
@@ -1826,14 +1822,18 @@ export default function RegistrationPage() {
               sx={{
                 mx: 3,
                 mb: 0,
+                // Gunakan flex agar map mengisi sisa ruang secara dinamis
+                flex: "1 1 0",
+                minHeight: 260,
+                maxHeight: 360,
                 border: `1px solid ${p.border}`,
                 borderRadius: "8px",
                 overflow: "hidden",
-                flexShrink: 0,
-                lineHeight: 0
+                position: "relative",
+                display: "block"
               }}
             >
-              <LeafletMap
+              <CanvasMap
                 center={mapCenter}
                 marker={mapMarker}
                 isDark={isDark}
