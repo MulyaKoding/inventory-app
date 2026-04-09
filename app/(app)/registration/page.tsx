@@ -1793,7 +1793,7 @@ export default function RegistrationPage() {
                     fontFamily: "'Nunito', sans-serif"
                   }}
                 >
-                  ⚠️ {mapSearchError}
+                  {mapSearchError}
                 </p>
               )}
               {mapLabel && !mapSearchError && (
