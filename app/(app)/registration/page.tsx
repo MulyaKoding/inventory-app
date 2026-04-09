@@ -180,7 +180,6 @@ export default function RegistrationPage() {
   const [markerSource, setMarkerSource] = useState<
     "geo" | "search" | "click" | null
   >(null)
-  const [flyToMarkerTick, setFlyToMarkerTick] = useState(0)
   // ────────────────────────────────────────────────────────────────────────────
 
   const [storeData, setStoreData] = useState<StoreData>({
@@ -622,14 +621,6 @@ export default function RegistrationPage() {
       to: { transform: "rotate(360deg)" }
     }
   }
-
-  const handleGeoButton = useCallback(() => {
-    if (mapMarker) {
-      setFlyToMarkerTick((t) => t + 1) // force trigger fly
-    } else {
-      requestGeolocation()
-    }
-  }, [mapMarker])
 
   return (
     <ThemeProvider theme={theme}>
@@ -1849,10 +1840,9 @@ export default function RegistrationPage() {
                 markerLabel={mapLabel}
                 isDark={isDark}
                 onMapClick={handleMapClick}
-                onRequestGeo={handleGeoButton}
+                onRequestGeo={requestGeolocation}
                 isGeoLoading={geoLoading}
                 markerSource={markerSource}
-                flyToMarkerTick={flyToMarkerTick}
               />
             </Box>
 
