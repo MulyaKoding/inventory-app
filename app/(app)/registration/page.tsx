@@ -177,6 +177,9 @@ export default function RegistrationPage() {
   const [mapSearchError, setMapSearchError] = useState("")
   const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle")
   const [geoLoading, setGeoLoading] = useState(false)
+  const [markerSource, setMarkerSource] = useState<
+    "geo" | "search" | "click" | null
+  >(null)
   // ────────────────────────────────────────────────────────────────────────────
 
   const [storeData, setStoreData] = useState<StoreData>({
@@ -1822,22 +1825,24 @@ export default function RegistrationPage() {
               sx={{
                 mx: 3,
                 mb: 0,
-                // Gunakan flex agar map mengisi sisa ruang secara dinamis
                 flex: "1 1 0",
-                minHeight: 260,
-                maxHeight: 360,
+                minHeight: 280,
+                maxHeight: 380,
                 border: `1px solid ${p.border}`,
                 borderRadius: "8px",
                 overflow: "hidden",
-                position: "relative",
-                display: "block"
+                position: "relative"
               }}
             >
               <CanvasMap
                 center={mapCenter}
                 marker={mapMarker}
+                markerLabel={mapLabel}
                 isDark={isDark}
                 onMapClick={handleMapClick}
+                onRequestGeo={requestGeolocation}
+                isGeoLoading={geoLoading}
+                markerSource={markerSource}
               />
             </Box>
 
