@@ -794,7 +794,22 @@ export default function CanvasMap({
 
       {/* ── GPS / My Location button (bottom-right) ── */}
       <button
-        onClick={onRequestGeo}
+        onClick={() => {
+          if (markerR.current) {
+            flyR.current = {
+              fLat: cR.current[0],
+              fLon: cR.current[1],
+              fZ: zR.current,
+              tLat: markerR.current[0],
+              tLon: markerR.current[1],
+              tZ: Math.max(zR.current, 15),
+              t0: performance.now(),
+              dur: 700
+            }
+            srRef.current()
+          }
+          onRequestGeo?.()
+        }}
         title="Gunakan Lokasi Saya"
         style={{
           position: "absolute",
