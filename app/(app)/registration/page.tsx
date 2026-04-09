@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback, useMemo } from "react"
+import { useState, useRef, useCallback, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
   Box,
@@ -14,6 +14,11 @@ import {
 import Header from "../components/header/page"
 import Sidebar from "../components/sidebar"
 import { useTheme } from "../hooks/useTheme"
+
+// ── Leaflet (dynamic import agar tidak SSR) ──────────────────────────────────
+import dynamic from "next/dynamic"
+const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false })
+// ────────────────────────────────────────────────────────────────────────────
 
 const DRAWER_WIDTH = 220
 
@@ -36,10 +41,14 @@ interface StoreData {
   storeCity: string
   storeProvince: string
   storePostalCode: string
+  storeLat: string
+  storeLng: string
+  storeLocationLabel: string
 }
 
 type OCRStatus = "idle" | "scanning" | "success" | "error"
 type ScanMode = "upload" | "webcam"
+type GeoStatus = "idle" | "requesting" | "granted" | "denied" | "unsupported"
 
 const STORE_TYPES = [
   "Retail / Toko Umum",
@@ -150,17 +159,29 @@ export default function RegistrationPage() {
     severity: "success" | "error"
   }>({ open: false, msg: "", severity: "success" })
 
-  // KTP Modal state
+  // KTP Modal
   const [ktpModalOpen, setKtpModalOpen] = useState(false)
   const [scanMode, setScanMode] = useState<ScanMode>("upload")
   const [ocrStatus, setOcrStatus] = useState<OCRStatus>("idle")
   const [ocrError, setOcrError] = useState("")
   const [ktpPreview, setKtpPreview] = useState<string>("")
   const [webcamActive, setWebcamActive] = useState(false)
-
-  // ── Camera selection state (BARU) ──
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([])
   const [selectedCameraId, setSelectedCameraId] = useState<string>("")
+
+  // ── MAP Modal state ─────────────────────────────────────────────────────────
+  const [mapModalOpen, setMapModalOpen] = useState(false)
+  const [mapCenter, setMapCenter] = useState<[number, number]>([
+    -6.2088, 106.8456
+  ]) // default Jakarta
+  const [mapMarker, setMapMarker] = useState<[number, number] | null>(null)
+  const [mapLabel, setMapLabel] = useState("")
+  const [mapQuery, setMapQuery] = useState("")
+  const [mapSearchLoading, setMapSearchLoading] = useState(false)
+  const [mapSearchError, setMapSearchError] = useState("")
+  const [geoStatus, setGeoStatus] = useState<GeoStatus>("idle")
+  const [geoLoading, setGeoLoading] = useState(false)
+  // ────────────────────────────────────────────────────────────────────────────
 
   const [storeData, setStoreData] = useState<StoreData>({
     storeName: "",
@@ -170,7 +191,10 @@ export default function RegistrationPage() {
     storeAddress: "",
     storeCity: "",
     storeProvince: "",
-    storePostalCode: ""
+    storePostalCode: "",
+    storeLat: "",
+    storeLng: "",
+    storeLocationLabel: ""
   })
   const [ownerData, setOwnerData] = useState<OwnerData>({
     nik: "",
@@ -214,7 +238,6 @@ export default function RegistrationPage() {
     () => ({
       bg: isDark ? "#0D0D0D" : "#f8fafc",
       bgPaper: isDark ? "#111111" : "#ffffff",
-      sidebarBg: isDark ? "#0D0D0D" : "#ffffff",
       border: isDark ? "#1f1f1f" : "#e2e8f0",
       textPrimary: isDark ? "#F5F5F0" : "#0f172a",
       textSecondary: isDark ? "#888888" : "#64748b",
@@ -285,46 +308,173 @@ export default function RegistrationPage() {
     return Object.keys(errors).length === 0
   }
 
-  // ── Webcam — diupdate dengan camera selection ──
+  // ── MAP: Geolokasi browser ──────────────────────────────────────────────────
+  const requestGeolocation = () => {
+    if (!navigator.geolocation) {
+      setGeoStatus("unsupported")
+      return
+    }
+    setGeoLoading(true)
+    setGeoStatus("requesting")
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords
+        setMapCenter([lat, lng])
+        setMapMarker([lat, lng])
+        setGeoStatus("granted")
+        setGeoLoading(false)
+        // Reverse geocode via Nominatim (gratis, tanpa API key)
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+            { headers: { "Accept-Language": "id" } }
+          )
+          const data = await res.json()
+          setMapLabel(
+            data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+          )
+        } catch {
+          setMapLabel(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+        }
+      },
+      (err) => {
+        setGeoStatus(err.code === 1 ? "denied" : "idle")
+        setGeoLoading(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  // ── MAP: Buka modal ─────────────────────────────────────────────────────────
+  const openMapModal = () => {
+    // Isi query dari data toko yang sudah diisi
+    const q = [
+      storeData.storeName,
+      storeData.storeAddress,
+      storeData.storeCity,
+      storeData.storeProvince
+    ]
+      .filter(Boolean)
+      .join(", ")
+    setMapQuery(q)
+    setMapSearchError("")
+
+    // Kalau sudah ada lokasi tersimpan, pakai itu
+    if (storeData.storeLat && storeData.storeLng) {
+      const lat = parseFloat(storeData.storeLat)
+      const lng = parseFloat(storeData.storeLng)
+      setMapCenter([lat, lng])
+      setMapMarker([lat, lng])
+      setMapLabel(storeData.storeLocationLabel)
+    } else {
+      setMapMarker(null)
+      setMapLabel("")
+    }
+
+    setMapModalOpen(true)
+
+    // Otomatis minta geolokasi kalau belum pernah
+    if (geoStatus === "idle" && !storeData.storeLat) {
+      setTimeout(() => requestGeolocation(), 400)
+    }
+  }
+
+  const closeMapModal = () => {
+    setMapModalOpen(false)
+    setMapSearchError("")
+  }
+
+  // ── MAP: Search via OpenAI (/api/location) ──────────────────────────────────
+  const searchLocation = async () => {
+    const q = mapQuery.trim()
+    if (q.length < 3) return
+    setMapSearchLoading(true)
+    setMapSearchError("")
+    try {
+      const res = await fetch("/api/location", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q })
+      })
+      const data = await res.json()
+      if (!res.ok || !data.found)
+        throw new Error(data.error || "Lokasi tidak ditemukan")
+      const coords: [number, number] = [data.lat, data.lng]
+      setMapCenter(coords)
+      setMapMarker(coords)
+      setMapLabel(data.label)
+    } catch (e: unknown) {
+      setMapSearchError(e instanceof Error ? e.message : "Gagal mencari lokasi")
+    } finally {
+      setMapSearchLoading(false)
+    }
+  }
+
+  // ── MAP: Klik peta untuk pindah marker ─────────────────────────────────────
+  const handleMapClick = useCallback(async (lat: number, lng: number) => {
+    setMapMarker([lat, lng])
+    // Reverse geocode
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+        { headers: { "Accept-Language": "id" } }
+      )
+      const data = await res.json()
+      setMapLabel(data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+    } catch {
+      setMapLabel(`${lat.toFixed(5)}, ${lng.toFixed(5)}`)
+    }
+  }, [])
+
+  // ── MAP: Simpan lokasi ──────────────────────────────────────────────────────
+  const confirmLocation = () => {
+    if (!mapMarker) return
+    updateStore("storeLat", String(mapMarker[0]))
+    updateStore("storeLng", String(mapMarker[1]))
+    updateStore("storeLocationLabel", mapLabel)
+
+    // ── Auto-fill alamat toko dari label lokasi maps ──
+    if (mapLabel && !storeData.storeAddress) {
+      updateStore("storeAddress", mapLabel)
+    }
+
+    setSnackbar({
+      open: true,
+      msg: "📍 Lokasi toko berhasil disimpan!",
+      severity: "success"
+    })
+    closeMapModal()
+  }
+
+  // ── Webcam ──────────────────────────────────────────────────────────────────
   const startWebcam = async (deviceId?: string) => {
     try {
-      // Stop kamera yang sedang aktif dulu
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop())
         streamRef.current = null
       }
-
-      // Ambil semua kamera yang tersedia setelah permission granted
       const constraints: MediaStreamConstraints = {
         video: deviceId
           ? { deviceId: { exact: deviceId }, width: 1280, height: 720 }
           : { facingMode: "environment", width: 1280, height: 720 }
       }
-
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
       streamRef.current = stream
-
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         videoRef.current.play()
       }
-
-      // Setelah permission granted, enumerate semua kamera (label sudah terisi)
       const devices = await navigator.mediaDevices.enumerateDevices()
-      const videoDevices = devices.filter((d) => d.kind === "videoinput")
-      setCameras(videoDevices)
-
-      // Simpan deviceId yang aktif
-      const activeTrack = stream.getVideoTracks()[0]
-      const activeDeviceId = activeTrack.getSettings().deviceId || ""
-      setSelectedCameraId(activeDeviceId)
+      setCameras(devices.filter((d) => d.kind === "videoinput"))
+      setSelectedCameraId(
+        stream.getVideoTracks()[0].getSettings().deviceId || ""
+      )
       setWebcamActive(true)
     } catch {
       setOcrError("Tidak dapat mengakses kamera.")
     }
   }
 
-  // ── Ganti kamera (BARU) ──
   const handleCameraChange = async (deviceId: string) => {
     setSelectedCameraId(deviceId)
     await startWebcam(deviceId)
@@ -381,38 +531,29 @@ export default function RegistrationPage() {
     try {
       const arrayBuffer = await blob.arrayBuffer()
       const uint8Array = new Uint8Array(arrayBuffer)
-
-      // ── Step 1: OCR ──
-      const blob1 = new Blob([uint8Array], { type: mimeType })
       const ocrForm = new FormData()
-      ocrForm.append("ktp", new File([blob1], "ktp.jpg", { type: mimeType }))
+      ocrForm.append(
+        "ktp",
+        new File([new Blob([uint8Array], { type: mimeType })], "ktp.jpg", {
+          type: mimeType
+        })
+      )
       const ocrRes = await fetch("/api/ocr", { method: "POST", body: ocrForm })
       const ocrResult = await ocrRes.json()
       if (!ocrRes.ok) throw new Error(ocrResult.error || "Gagal memproses KTP")
-
-      // ── Step 2: Upload ke Cloudinary ──
-      const blob2 = new Blob([uint8Array], { type: mimeType })
       const uploadForm = new FormData()
       uploadForm.append(
         "file",
-        new File([blob2], "ktp.jpg", { type: mimeType })
+        new File([new Blob([uint8Array], { type: mimeType })], "ktp.jpg", {
+          type: mimeType
+        })
       )
       const uploadRes = await fetch("/api/upload/ktp", {
         method: "POST",
         body: uploadForm
       })
       const uploadResult = await uploadRes.json()
-
       const ktpImageUrl = uploadRes.ok ? uploadResult.url : ""
-      if (!uploadRes.ok) {
-        console.warn(
-          "Upload KTP gagal:",
-          uploadResult.error,
-          uploadResult.detail
-        )
-      }
-
-      // ── Step 3: Set data owner ──
       const { data } = ocrResult
       setOwnerData({
         nik: data.nik || "",
@@ -465,6 +606,20 @@ export default function RegistrationPage() {
       setSnackbar({ open: true, msg, severity: "error" })
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  // Spinner style helper
+  const spinnerSx = {
+    width: 14,
+    height: 14,
+    border: "2px solid rgba(255,255,255,0.4)",
+    borderTopColor: "#fff",
+    borderRadius: "50%",
+    animation: "spin 0.8s linear infinite",
+    "@keyframes spin": {
+      from: { transform: "rotate(0deg)" },
+      to: { transform: "rotate(360deg)" }
     }
   }
 
@@ -528,7 +683,7 @@ export default function RegistrationPage() {
 
           <Box sx={{ flex: 1, overflow: "auto", p: "16px" }}>
             <Box sx={{ width: "100%" }}>
-              {/* Success */}
+              {/* ── Success ── */}
               {submitSuccess ? (
                 <Box
                   sx={{
@@ -580,12 +735,11 @@ export default function RegistrationPage() {
                 </Box>
               ) : (
                 <>
-                  {/* Stepper */}
+                  {/* ── Stepper ── */}
                   <Box
                     sx={{
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
-                      gap: 0,
                       mb: 3,
                       border: `1px solid ${p.border}`,
                       borderRadius: "8px",
@@ -686,7 +840,7 @@ export default function RegistrationPage() {
                     ))}
                   </Box>
 
-                  {/* Form Card */}
+                  {/* ── Form Card ── */}
                   <Box
                     sx={{
                       border: `1px solid ${p.border}`,
@@ -751,7 +905,7 @@ export default function RegistrationPage() {
                       </Box>
                     </Box>
 
-                    {/* ── STEP 1 ── */}
+                    {/* ════════ STEP 1 ════════ */}
                     {step === 1 && (
                       <Box sx={{ p: { xs: 2, sm: 3 } }}>
                         <Box
@@ -765,6 +919,7 @@ export default function RegistrationPage() {
                             gap: { xs: 2, sm: 2.5 }
                           }}
                         >
+                          {/* NAMA TOKO + tombol 🗺️ Peta */}
                           <Box
                             sx={{
                               gridColumn: {
@@ -778,17 +933,103 @@ export default function RegistrationPage() {
                               label="NAMA TOKO *"
                               error={storeErrors.storeName}
                             >
-                              <input
-                                type="text"
-                                placeholder="Contoh: Toko Maju Jaya"
-                                value={storeData.storeName}
-                                onChange={(e) =>
-                                  updateStore("storeName", e.target.value)
-                                }
-                                style={inputStyle(!!storeErrors.storeName)}
-                              />
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <input
+                                  type="text"
+                                  placeholder="Contoh: Toko Maju Jaya"
+                                  value={storeData.storeName}
+                                  onChange={(e) =>
+                                    updateStore("storeName", e.target.value)
+                                  }
+                                  style={{
+                                    ...inputStyle(!!storeErrors.storeName),
+                                    flex: 1
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={openMapModal}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    padding: "0 14px",
+                                    flexShrink: 0,
+                                    border: `1px solid ${storeData.storeLat ? "#16a34a" : isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                                    borderRadius: 6,
+                                    background: storeData.storeLat
+                                      ? "linear-gradient(135deg,#15803d,#16a34a)"
+                                      : "linear-gradient(135deg,#1e3a8a,#2563eb)",
+                                    boxShadow: storeData.storeLat
+                                      ? "0 4px 12px rgba(22,163,74,.3)"
+                                      : "0 4px 12px rgba(59,130,246,.25)",
+                                    color: "#fff",
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    fontFamily: "'Nunito', sans-serif",
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap",
+                                    height: 42,
+                                    transition: "all 0.25s"
+                                  }}
+                                >
+                                  {storeData.storeLat ? "✓ Lokasi" : "Peta"}
+                                </button>
+                              </Box>
                             </Field>
+
+                            {/* Badge lokasi tersimpan */}
+                            {storeData.storeLocationLabel && (
+                              <Box
+                                sx={{
+                                  mt: 1,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 0.75,
+                                  px: 1.5,
+                                  py: 0.75,
+                                  bgcolor: isDark ? "#0a2e1c" : "#f0fdf4",
+                                  border: `1px solid ${isDark ? "#1a5c38" : "#bbf7d0"}`,
+                                  borderRadius: "4px"
+                                }}
+                              >
+                                <span style={{ fontSize: 11 }}>📍</span>
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    color: isDark ? "#4ade80" : "#16a34a",
+                                    fontFamily: "'Nunito', sans-serif",
+                                    fontWeight: 600,
+                                    flex: 1,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap"
+                                  }}
+                                >
+                                  {storeData.storeLocationLabel}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    updateStore("storeLat", "")
+                                    updateStore("storeLng", "")
+                                    updateStore("storeLocationLabel", "")
+                                  }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: isDark ? "#4ade80" : "#16a34a",
+                                    fontSize: 13,
+                                    padding: 0,
+                                    lineHeight: 1
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </Box>
+                            )}
                           </Box>
+
                           <Field
                             label="JENIS TOKO *"
                             error={storeErrors.storeType}
@@ -808,6 +1049,7 @@ export default function RegistrationPage() {
                               ))}
                             </select>
                           </Field>
+
                           <Field
                             label="NOMOR TELEPON *"
                             error={storeErrors.storePhone}
@@ -822,6 +1064,7 @@ export default function RegistrationPage() {
                               style={inputStyle(!!storeErrors.storePhone)}
                             />
                           </Field>
+
                           <Field label="EMAIL TOKO">
                             <input
                               type="email"
@@ -833,6 +1076,7 @@ export default function RegistrationPage() {
                               style={inputStyle(false)}
                             />
                           </Field>
+
                           <Box
                             sx={{
                               gridColumn: {
@@ -860,6 +1104,7 @@ export default function RegistrationPage() {
                               />
                             </Field>
                           </Box>
+
                           <Field label="KOTA *" error={storeErrors.storeCity}>
                             <input
                               type="text"
@@ -871,6 +1116,7 @@ export default function RegistrationPage() {
                               style={inputStyle(!!storeErrors.storeCity)}
                             />
                           </Field>
+
                           <Field
                             label="PROVINSI *"
                             error={storeErrors.storeProvince}
@@ -890,6 +1136,7 @@ export default function RegistrationPage() {
                               ))}
                             </select>
                           </Field>
+
                           <Field label="KODE POS">
                             <input
                               type="text"
@@ -903,6 +1150,7 @@ export default function RegistrationPage() {
                             />
                           </Field>
                         </Box>
+
                         <Box
                           sx={{
                             mt: 3,
@@ -935,7 +1183,7 @@ export default function RegistrationPage() {
                       </Box>
                     )}
 
-                    {/* ── STEP 2 ── */}
+                    {/* ════════ STEP 2 ════════ */}
                     {step === 2 && (
                       <Box sx={{ p: { xs: 2, sm: 3 } }}>
                         {ownerData.inputMethod === "ocr" && (
@@ -1017,7 +1265,7 @@ export default function RegistrationPage() {
                                     border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
                                     borderRadius: 6,
                                     background:
-                                      "linear-gradient(135deg, #1e3a8a 0%, #1e3a8a 100%)",
+                                      "linear-gradient(135deg,#1e3a8a,#1e3a8a)",
                                     boxShadow:
                                       "0 4px 12px rgba(59,130,246,.25)",
                                     color: "#fff",
@@ -1026,7 +1274,6 @@ export default function RegistrationPage() {
                                     fontFamily: "'Nunito', sans-serif",
                                     cursor: "pointer",
                                     whiteSpace: "nowrap",
-                                    transition: "all 0.2s",
                                     flexShrink: 0
                                   }}
                                 >
@@ -1194,22 +1441,7 @@ export default function RegistrationPage() {
                               width: "100%"
                             }}
                           >
-                            {isSubmitting && (
-                              <Box
-                                sx={{
-                                  width: 14,
-                                  height: 14,
-                                  border: "2px solid rgba(255,255,255,0.4)",
-                                  borderTopColor: "#fff",
-                                  borderRadius: "50%",
-                                  animation: "spin 0.8s linear infinite",
-                                  "@keyframes spin": {
-                                    from: { transform: "rotate(0deg)" },
-                                    to: { transform: "rotate(360deg)" }
-                                  }
-                                }}
-                              />
-                            )}
+                            {isSubmitting && <Box sx={spinnerSx} />}
                             {isSubmitting
                               ? "Mendaftarkan..."
                               : "Daftarkan Toko"}
@@ -1225,6 +1457,498 @@ export default function RegistrationPage() {
         </Box>
       </Box>
 
+      {/* ══════════════════════════════════════════════════════════════════════
+          MAP MODAL
+      ══════════════════════════════════════════════════════════════════════ */}
+      <Modal open={mapModalOpen} onClose={closeMapModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: { xs: "96vw", sm: 580 },
+            maxHeight: { xs: "92vh", sm: "88vh" },
+            bgcolor: p.bgPaper,
+            border: `1px solid ${p.border}`,
+            borderRadius: "12px",
+            boxShadow: p.menuShadow,
+            outline: "none",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              px: 3,
+              py: 2,
+              borderBottom: `1px solid ${p.border}`,
+              bgcolor: p.bg,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexShrink: 0
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: p.textPrimary,
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Lokasi Toko
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 11,
+                    color: p.textMuted,
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Pin lokasi toko Anda di peta
+                </p>
+              </Box>
+            </Box>
+            <button
+              onClick={closeMapModal}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: p.textMuted,
+                fontSize: 18,
+                lineHeight: 1,
+                padding: 4
+              }}
+            >
+              ✕
+            </button>
+          </Box>
+
+          {/* Scrollable body */}
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            {/* ── Geo permission banner ── */}
+            {geoStatus === "idle" || geoStatus === "requesting" ? (
+              <Box
+                sx={{
+                  mx: 3,
+                  mt: 2.5,
+                  p: 2,
+                  bgcolor: isDark ? "#0d1f3c" : "#eff6ff",
+                  border: `1px solid ${isDark ? "#1e3a8a" : "#bfdbfe"}`,
+                  borderRadius: "8px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 1.5
+                }}
+              >
+                <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>
+                  📍
+                </span>
+                <Box>
+                  <p
+                    style={{
+                      margin: "0 0 4px",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: isDark ? "#93c5fd" : "#1e3a8a",
+                      fontFamily: "'Nunito', sans-serif"
+                    }}
+                  >
+                    {geoStatus === "requesting"
+                      ? "Meminta akses lokasi..."
+                      : "Gunakan Lokasi Saat Ini"}
+                  </p>
+                  <p
+                    style={{
+                      margin: "0 0 10px",
+                      fontSize: 12,
+                      color: p.textSecondary,
+                      fontFamily: "'Nunito', sans-serif"
+                    }}
+                  >
+                    {geoStatus === "requesting"
+                      ? "Izinkan akses lokasi di browser Anda untuk menampilkan posisi toko saat ini."
+                      : "Klik tombol di bawah untuk mendeteksi lokasi toko secara otomatis."}
+                  </p>
+                  {geoStatus === "idle" && (
+                    <button
+                      onClick={requestGeolocation}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "7px 16px",
+                        border: "none",
+                        borderRadius: 6,
+                        background: "#1e3a8a",
+                        color: "#fff",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        fontFamily: "'Nunito', sans-serif",
+                        cursor: "pointer"
+                      }}
+                    >
+                      🎯 Deteksi Lokasi Saya
+                    </button>
+                  )}
+                  {geoStatus === "requesting" && (
+                    <Box
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 1
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          ...spinnerSx,
+                          border: "2px solid rgba(30,58,138,0.3)",
+                          borderTopColor: "#1e3a8a"
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: "#1e3a8a",
+                          fontFamily: "'Nunito', sans-serif"
+                        }}
+                      >
+                        Menunggu izin...
+                      </span>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            ) : geoStatus === "granted" ? (
+              <Box
+                sx={{
+                  mx: 3,
+                  mt: 2.5,
+                  px: 2,
+                  py: 1.25,
+                  bgcolor: isDark ? "#0a2e1c" : "#f0fdf4",
+                  border: `1px solid ${isDark ? "#1a5c38" : "#bbf7d0"}`,
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1
+                }}
+              >
+                <span style={{ fontSize: 13, color: "#16a34a" }}>✓</span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: isDark ? "#4ade80" : "#16a34a",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 600
+                  }}
+                >
+                  Lokasi terdeteksi — pin sudah diletakkan di posisi Anda
+                </span>
+                <button
+                  onClick={requestGeolocation}
+                  style={{
+                    marginLeft: "auto",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 11,
+                    color: isDark ? "#4ade80" : "#16a34a",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 700,
+                    textDecoration: "underline",
+                    padding: 0
+                  }}
+                >
+                  Refresh
+                </button>
+              </Box>
+            ) : geoStatus === "denied" ? (
+              <Box
+                sx={{
+                  mx: 3,
+                  mt: 2.5,
+                  px: 2,
+                  py: 1.25,
+                  bgcolor: isDark ? "#2e1a10" : "#fff7ed",
+                  border: `1px solid ${isDark ? "#7c3a10" : "#fed7aa"}`,
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1
+                }}
+              >
+                <span style={{ fontSize: 13 }}>⚠️</span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: isDark ? "#fdba74" : "#c2410c",
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Akses lokasi ditolak. Gunakan search atau klik peta secara
+                  manual.
+                </span>
+              </Box>
+            ) : geoStatus === "unsupported" ? (
+              <Box
+                sx={{
+                  mx: 3,
+                  mt: 2.5,
+                  px: 2,
+                  py: 1.25,
+                  bgcolor: isDark ? "#1a1a1a" : "#f8fafc",
+                  border: `1px solid ${p.border}`,
+                  borderRadius: "6px"
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: p.textMuted,
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Browser tidak mendukung geolokasi. Gunakan search di bawah.
+                </span>
+              </Box>
+            ) : null}
+
+            {/* ── Search bar ── */}
+            <Box sx={{ px: 3, pt: 2.5, pb: 1.5 }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: p.textMuted,
+                  marginBottom: 6,
+                  fontFamily: "'Nunito', sans-serif",
+                  letterSpacing: "0.04em"
+                }}
+              >
+                CARI LOKASI
+              </label>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <input
+                  type="text"
+                  placeholder="Nama toko, alamat, atau area..."
+                  value={mapQuery}
+                  onChange={(e) => setMapQuery(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && !mapSearchLoading && searchLocation()
+                  }
+                  style={{ ...inputStyle(false), flex: 1 }}
+                />
+                <button
+                  onClick={searchLocation}
+                  disabled={mapSearchLoading || mapQuery.trim().length < 3}
+                  style={{
+                    padding: "0 16px",
+                    border: "none",
+                    borderRadius: 6,
+                    background:
+                      mapSearchLoading || mapQuery.trim().length < 3
+                        ? "#64748b"
+                        : "#1e3a8a",
+                    color: "#fff",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: "'Nunito', sans-serif",
+                    cursor:
+                      mapSearchLoading || mapQuery.trim().length < 3
+                        ? "not-allowed"
+                        : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    flexShrink: 0,
+                    height: 42,
+                    transition: "background 0.2s"
+                  }}
+                >
+                  {mapSearchLoading ? <Box sx={{ ...spinnerSx }} /> : <></>}
+                  {mapSearchLoading ? "Mencari..." : "Cari"}
+                </button>
+              </Box>
+              {mapSearchError && (
+                <p
+                  style={{
+                    margin: "6px 0 0",
+                    fontSize: 12,
+                    color: "#ef4444",
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  ⚠️ {mapSearchError}
+                </p>
+              )}
+              {mapLabel && !mapSearchError && (
+                <p
+                  style={{
+                    margin: "6px 0 0",
+                    fontSize: 12,
+                    color: isDark ? "#4ade80" : "#16a34a",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 600
+                  }}
+                >
+                  📍 {mapLabel}
+                </p>
+              )}
+              <p
+                style={{
+                  margin: "5px 0 0",
+                  fontSize: 11,
+                  color: p.textMuted,
+                  fontFamily: "'Nunito', sans-serif"
+                }}
+              >
+                Klik langsung pada peta untuk memindahkan pin lokasi.
+              </p>
+            </Box>
+
+            {/* ── Leaflet Map ── */}
+            <Box
+              sx={{
+                mx: 3,
+                mb: 0,
+                border: `1px solid ${p.border}`,
+                borderRadius: "8px",
+                overflow: "hidden",
+                flexShrink: 0
+              }}
+            >
+              <LeafletMap
+                center={mapCenter}
+                marker={mapMarker}
+                isDark={isDark}
+                onMapClick={handleMapClick}
+              />
+            </Box>
+
+            {/* Footer dengan koordinat */}
+            {mapMarker && (
+              <Box
+                sx={{
+                  mx: 3,
+                  mt: 1.5,
+                  px: 2,
+                  py: 1,
+                  bgcolor: p.bg,
+                  border: `1px solid ${p.border}`,
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: p.textMuted,
+                      fontFamily: "'Nunito', sans-serif"
+                    }}
+                  >
+                    <strong style={{ color: p.textSecondary }}>Lat:</strong>{" "}
+                    {mapMarker[0].toFixed(6)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: p.textMuted,
+                      fontFamily: "'Nunito', sans-serif"
+                    }}
+                  >
+                    <strong style={{ color: p.textSecondary }}>Lng:</strong>{" "}
+                    {mapMarker[1].toFixed(6)}
+                  </span>
+                </Box>
+                <a
+                  href={`https://www.google.com/maps?q=${mapMarker[0]},${mapMarker[1]}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: 11,
+                    color: "#1e3a8a",
+                    fontFamily: "'Nunito', sans-serif",
+                    textDecoration: "none",
+                    fontWeight: 700
+                  }}
+                >
+                  Buka Google Maps ↗
+                </a>
+              </Box>
+            )}
+          </Box>
+
+          {/* Footer tombol */}
+          <Box
+            sx={{
+              px: 3,
+              py: 2,
+              borderTop: `1px solid ${p.border}`,
+              bgcolor: p.bg,
+              display: "flex",
+              gap: 1.5,
+              justifyContent: "flex-end",
+              flexShrink: 0
+            }}
+          >
+            <button
+              onClick={closeMapModal}
+              style={{
+                padding: "9px 20px",
+                border: `1px solid ${p.border}`,
+                borderRadius: 6,
+                background: "transparent",
+                color: p.textSecondary,
+                fontSize: 13,
+                fontFamily: "'Nunito', sans-serif",
+                cursor: "pointer"
+              }}
+            >
+              Batal
+            </button>
+            <button
+              onClick={confirmLocation}
+              disabled={!mapMarker}
+              style={{
+                padding: "9px 22px",
+                border: "none",
+                borderRadius: 6,
+                background: mapMarker ? "#1e3a8a" : "#64748b",
+                color: "#fff",
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: "'Nunito', sans-serif",
+                cursor: mapMarker ? "pointer" : "not-allowed",
+                transition: "background 0.2s"
+              }}
+            >
+              {mapMarker ? "Simpan Lokasi" : "Pilih Lokasi di Peta"}
+            </button>
+          </Box>
+        </Box>
+      </Modal>
+
       {/* ══════════════════════════════════════════════
           KTP SCAN MODAL
       ══════════════════════════════════════════════ */}
@@ -1234,7 +1958,7 @@ export default function RegistrationPage() {
             position: "absolute",
             top: "50%",
             left: "50%",
-            transform: "translate(-50%, -50%)",
+            transform: "translate(-50%,-50%)",
             width: { xs: "95vw", sm: 520 },
             maxHeight: { xs: "90vh", sm: "85vh" },
             bgcolor: p.bgPaper,
@@ -1247,7 +1971,6 @@ export default function RegistrationPage() {
             flexDirection: "column"
           }}
         >
-          {/* Modal Header */}
           <Box
             sx={{
               px: 3,
@@ -1316,9 +2039,7 @@ export default function RegistrationPage() {
             </button>
           </Box>
 
-          {/* Scrollable content */}
           <Box sx={{ p: 3, overflowY: "auto", flex: 1 }}>
-            {/* Tab: Upload / Webcam */}
             <Box
               sx={{
                 display: "flex",
@@ -1361,7 +2082,6 @@ export default function RegistrationPage() {
               ))}
             </Box>
 
-            {/* Upload mode */}
             {scanMode === "upload" && (
               <>
                 <input
@@ -1456,10 +2176,8 @@ export default function RegistrationPage() {
               </>
             )}
 
-            {/* Webcam mode */}
             {scanMode === "webcam" && (
               <Box>
-                {/* Video frame */}
                 <Box
                   sx={{
                     position: "relative",
@@ -1536,7 +2254,6 @@ export default function RegistrationPage() {
                   )}
                 </Box>
 
-                {/* ── Pilih Kamera (BARU) — muncul setelah kamera aktif & ada >1 kamera ── */}
                 {webcamActive && cameras.length > 1 && (
                   <Box sx={{ mb: 1.5 }}>
                     <label
@@ -1546,8 +2263,7 @@ export default function RegistrationPage() {
                         fontWeight: 700,
                         color: p.textMuted,
                         marginBottom: 5,
-                        fontFamily: "'Nunito', sans-serif",
-                        letterSpacing: "0.04em"
+                        fontFamily: "'Nunito', sans-serif"
                       }}
                     >
                       Pilih Kamera
@@ -1583,7 +2299,6 @@ export default function RegistrationPage() {
                   </Box>
                 )}
 
-                {/* Tombol Ambil Foto & Batal */}
                 {webcamActive && (
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <button
@@ -1625,7 +2340,6 @@ export default function RegistrationPage() {
               </Box>
             )}
 
-            {/* Status: scanning */}
             {ocrStatus === "scanning" && (
               <Box
                 sx={{
@@ -1665,8 +2379,6 @@ export default function RegistrationPage() {
                 </span>
               </Box>
             )}
-
-            {/* Status: success */}
             {ocrStatus === "success" && (
               <Box
                 sx={{
@@ -1693,8 +2405,6 @@ export default function RegistrationPage() {
                 </span>
               </Box>
             )}
-
-            {/* Status: error */}
             {ocrStatus === "error" && (
               <Box
                 sx={{
@@ -1723,7 +2433,7 @@ export default function RegistrationPage() {
                   }}
                   style={{
                     padding: "6px 14px",
-                    border: `1px solid #ef4444`,
+                    border: "1px solid #ef4444",
                     borderRadius: 4,
                     background: "transparent",
                     color: "#ef4444",
