@@ -471,15 +471,6 @@ export default function CanvasMap({
       }
       ctx.restore()
     }
-
-    // attribution
-    ctx.fillStyle = "rgba(255,255,255,.78)"
-    ctx.fillRect(W - 206, H - 18, 206, 18)
-    ctx.fillStyle = "#444"
-    ctx.font = "9px sans-serif"
-    ctx.textAlign = "right"
-    ctx.textBaseline = "alphabetic"
-    ctx.fillText("© OpenStreetMap contributors", W - 4, H - 5)
   }, [zoomAt])
 
   useEffect(() => {
