@@ -20,15 +20,15 @@ model OtpVerification {
 }
 
 model User {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  email       String   @unique
-  phone       String?  @unique  // ← optional dulu (?)
-  password    String
-  role        String   @default("user")
-  isVerified  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String   @unique
+  phone      String?  @unique
+  password   String
+  role       String   @default("user")
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("users")
 }
@@ -52,7 +52,7 @@ model Product {
 model Store {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   storeId         String   @unique
-  userId          String   @db.ObjectId   // ← tambah ini
+  userId          String   @db.ObjectId
   storeName       String
   storeType       String
   storePhone      String
@@ -70,11 +70,49 @@ model Store {
 }
 
 type Owner {
-  nik           String
-  fullName      String
-  birthDate     String
-  address       String
-  gender        String
-  ktpImageUrl   String?
-  inputMethod   String   @default("manual")
+  nik         String
+  fullName    String
+  birthDate   String
+  address     String
+  gender      String
+  ktpImageUrl String?
+  inputMethod String  @default("manual")
+}
+
+// ── Wilayah ──────────────────────────────────────────────
+
+model MsProvinsi {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  kdProvinsi   String @unique @map("Kd_Provinsi")
+  namaProvinsi String @map("NamaProvinsi")
+
+  @@map("ms_provinsi")
+}
+
+model MsKota {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  kdKota       String  @unique @map("Kd_Kota")
+  namaKota     String  @map("NamaKota")
+  kdProvinsi   String  @map("Kd_Provinsi")
+
+  @@map("ms_kota")
+}
+
+model MsKecamatan {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  kdKecamatan   String @unique @map("Kd_Kecamatan")
+  namaKecamatan String @map("NamaKecamatan")
+  kdKota        String @map("Kd_Kota")
+
+  @@map("ms_kecamatan")
+}
+
+model MsKelurahan {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  kdKelurahan   String  @unique @map("Kd_Kelurahan")
+  namaKelurahan String  @map("NamaKelurahan")
+  kdKecamatan   String  @map("Kd_Kecamatan")
+  kodePos       String? @map("KodePos")
+
+  @@map("ms_kelurahan")
 }

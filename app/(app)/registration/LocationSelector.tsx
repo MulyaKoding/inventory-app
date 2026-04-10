@@ -41,7 +41,6 @@ interface LocationSelectorProps {
   p: { border: string; textPrimary: string; textMuted: string }
 }
 
-// Semua fetch via proxy internal /api/wilayah (server-side) → bypass CORS
 const api = (params: Record<string, string>) =>
   `/api/wilayah?${new URLSearchParams(params).toString()}`
 
@@ -78,6 +77,7 @@ export default function LocationSelector({
       .catch((e) => setErrProv(e.message || "Gagal memuat"))
       .finally(() => setLoadingProv(false))
   }
+
   useEffect(() => {
     fetchProvinsi()
   }, [])
@@ -146,6 +146,7 @@ export default function LocationSelector({
       kodePos: ""
     })
   }
+
   const handleKota = (kd: string) => {
     const nama = kotaList.find((x) => x.Kd_Kota === kd)?.NamaKota ?? ""
     onChange({
@@ -159,6 +160,7 @@ export default function LocationSelector({
       kodePos: ""
     })
   }
+
   const handleKecamatan = (kd: string) => {
     const nama =
       kecamatanList.find((x) => x.Kd_Kecamatan === kd)?.NamaKecamatan ?? ""
@@ -171,6 +173,7 @@ export default function LocationSelector({
       kodePos: ""
     })
   }
+
   const handleKelurahan = (kd: string) => {
     const item = kelurahanList.find((x) => x.Kd_Kelurahan === kd)
     onChange({
@@ -298,6 +301,7 @@ export default function LocationSelector({
         </Box>
       )}
 
+      {/* Provinsi & Kota */}
       <Box
         sx={{
           display: "grid",
@@ -324,6 +328,7 @@ export default function LocationSelector({
           </select>
           <Err msg={errors.provinsiKd} />
         </div>
+
         <div>
           <Lbl text="KOTA / KABUPATEN *" loading={loadingKota} />
           <select
@@ -349,6 +354,7 @@ export default function LocationSelector({
         </div>
       </Box>
 
+      {/* Kecamatan & Kelurahan */}
       <Box
         sx={{
           display: "grid",
@@ -380,6 +386,7 @@ export default function LocationSelector({
           </select>
           <Err msg={errors.kecamatanKd} />
         </div>
+
         <div>
           <Lbl text="KELURAHAN / DESA *" loading={loadingKel} />
           <select
@@ -405,6 +412,7 @@ export default function LocationSelector({
         </div>
       </Box>
 
+      {/* Kode Pos */}
       <Box sx={{ mt: { xs: 2, sm: 2.5 }, maxWidth: { xs: "100%", sm: 200 } }}>
         <label
           style={{
