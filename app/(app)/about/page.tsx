@@ -14,7 +14,7 @@ const TEAM = [
   {
     name: "Rahmat Mulya Simanjuntak",
     role: "Founder & CEO",
-    initials: "AN",
+    initials: "RM",
     color: "#1e3a8a",
     desc: "Berpengalaman 8 tahun di bidang supply chain dan pengembangan sistem ERP untuk UKM Indonesia."
   },
