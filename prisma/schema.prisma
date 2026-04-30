@@ -68,7 +68,8 @@ model Store {
   storeKecamatanKd String?          
   storeKelurahanKd String?        
   storeLat         String?        
-  storeLng         String?          
+  storeLng         String?       
+  storeImageUrl    String?      
   status           String   @default("active")
   owner            Owner?
   createdAt        DateTime @default(now())

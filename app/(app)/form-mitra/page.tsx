@@ -97,7 +97,6 @@ export default function FormMitraPage() {
     company_city: "",
     company_province: "",
     company_postal: "",
-    company_website: "",
     employee_count: "",
     // plan
     plan: "growth"
@@ -881,7 +880,7 @@ export default function FormMitraPage() {
                   </div>
                 </div>
 
-                <div className="fm-field-row">
+                <div className="fm-field">
                   <div>
                     <label className="fm-lbl">Kode Pos</label>
                     <input
@@ -891,16 +890,6 @@ export default function FormMitraPage() {
                       maxLength={5}
                       value={form.company_postal}
                       onChange={handleChange("company_postal")}
-                    />
-                  </div>
-                  <div>
-                    <label className="fm-lbl">Website</label>
-                    <input
-                      className="fm-inp no-icon"
-                      type="url"
-                      placeholder="https://bisnis.com"
-                      value={form.company_website}
-                      onChange={handleChange("company_website")}
                     />
                   </div>
                 </div>

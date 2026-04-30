@@ -38,11 +38,15 @@ interface StoreData {
   storeLat: string
   storeLng: string
   storeLocationLabel: string
+  storeImageUrl: string // ← BARU
 }
 
 type OCRStatus = "idle" | "scanning" | "success" | "error"
 type ScanMode = "upload" | "webcam"
 type GeoStatus = "idle" | "requesting" | "granted" | "denied" | "unsupported"
+// ← BARU: status upload gambar toko
+type StoreImgStatus = "idle" | "uploading" | "success" | "error"
+type StoreImgMode = "upload" | "camera"
 
 const STORE_TYPES = [
   "Retail / Toko Umum",
@@ -116,6 +120,12 @@ export default function RegistrationPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
+  // ← BARU: refs untuk gambar toko
+  const storeImgFileRef = useRef<HTMLInputElement>(null)
+  const storeImgVideoRef = useRef<HTMLVideoElement>(null)
+  const storeImgCanvasRef = useRef<HTMLCanvasElement>(null)
+  const storeImgStreamRef = useRef<MediaStream | null>(null)
+
   const { isDark, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [step, setStep] = useState<1 | 2>(1)
@@ -138,6 +148,16 @@ export default function RegistrationPage() {
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([])
   const [selectedCameraId, setSelectedCameraId] = useState<string>("")
 
+  // ← BARU: Store Image Modal state
+  const [storeImgModalOpen, setStoreImgModalOpen] = useState(false)
+  const [storeImgMode, setStoreImgMode] = useState<StoreImgMode>("upload")
+  const [storeImgStatus, setStoreImgStatus] = useState<StoreImgStatus>("idle")
+  const [storeImgError, setStoreImgError] = useState("")
+  const [storeImgPreview, setStoreImgPreview] = useState<string>("")
+  const [storeImgCamActive, setStoreImgCamActive] = useState(false)
+  const [storeImgCameras, setStoreImgCameras] = useState<MediaDeviceInfo[]>([])
+  const [storeImgSelectedCam, setStoreImgSelectedCam] = useState<string>("")
+
   // MAP Modal
   const [mapModalOpen, setMapModalOpen] = useState(false)
   const [mapCenter, setMapCenter] = useState<[number, number]>([
@@ -154,7 +174,6 @@ export default function RegistrationPage() {
     "geo" | "search" | "click" | null
   >(null)
 
-  // Store Data (tanpa storeCity, storeProvince, storePostalCode — sudah di location)
   const [storeData, setStoreData] = useState<StoreData>({
     storeName: "",
     storeType: "",
@@ -163,10 +182,10 @@ export default function RegistrationPage() {
     storeAddress: "",
     storeLat: "",
     storeLng: "",
-    storeLocationLabel: ""
+    storeLocationLabel: "",
+    storeImageUrl: "" // ← BARU
   })
 
-  // Location cascade
   const [location, setLocation] = useState<LocationValue>(EMPTY_LOCATION)
   const [locationErrors, setLocationErrors] = useState<
     Partial<Record<keyof LocationValue, string>>
@@ -290,7 +309,116 @@ export default function RegistrationPage() {
     return Object.keys(errors).length === 0
   }
 
-  // MAP: Geolokasi
+  // ════════════════════════════════════════
+  // STORE IMAGE — upload to Cloudinary
+  // ════════════════════════════════════════
+  const stopStoreImgCam = useCallback(() => {
+    if (storeImgStreamRef.current) {
+      storeImgStreamRef.current.getTracks().forEach((t) => t.stop())
+      storeImgStreamRef.current = null
+    }
+    setStoreImgCamActive(false)
+  }, [])
+
+  const startStoreImgCam = async (deviceId?: string) => {
+    try {
+      if (storeImgStreamRef.current) {
+        storeImgStreamRef.current.getTracks().forEach((t) => t.stop())
+        storeImgStreamRef.current = null
+      }
+      const constraints: MediaStreamConstraints = {
+        video: deviceId
+          ? { deviceId: { exact: deviceId }, width: 1280, height: 720 }
+          : { facingMode: "environment", width: 1280, height: 720 }
+      }
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      storeImgStreamRef.current = stream
+      if (storeImgVideoRef.current) {
+        storeImgVideoRef.current.srcObject = stream
+        storeImgVideoRef.current.onloadedmetadata = () => {
+          storeImgVideoRef.current
+            ?.play()
+            .catch((e) => console.warn("play:", e))
+        }
+      }
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      setStoreImgCameras(devices.filter((d) => d.kind === "videoinput"))
+      setStoreImgSelectedCam(
+        stream.getVideoTracks()[0].getSettings().deviceId || ""
+      )
+      setStoreImgCamActive(true)
+    } catch {
+      setStoreImgError("Tidak dapat mengakses kamera.")
+    }
+  }
+
+  const uploadStoreImage = async (blob: Blob, mimeType: string) => {
+    setStoreImgStatus("uploading")
+    setStoreImgError("")
+    try {
+      const form = new FormData()
+      form.append("file", new File([blob], "store.jpg", { type: mimeType }))
+      const res = await fetch("/api/upload/store-image", {
+        method: "POST",
+        body: form
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "Gagal upload gambar")
+      updateStore("storeImageUrl", result.url)
+      setStoreImgStatus("success")
+      setSnackbar({
+        open: true,
+        msg: "📸 Gambar toko berhasil diupload!",
+        severity: "success"
+      })
+      setTimeout(() => closeStoreImgModal(), 1000)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan"
+      setStoreImgError(msg)
+      setStoreImgStatus("error")
+    }
+  }
+
+  const handleStoreImgFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setStoreImgPreview(URL.createObjectURL(file))
+    await uploadStoreImage(file, file.type)
+  }
+
+  const captureStoreImgCam = async () => {
+    if (!storeImgVideoRef.current || !storeImgCanvasRef.current) return
+    const video = storeImgVideoRef.current
+    const canvas = storeImgCanvasRef.current
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext("2d")?.drawImage(video, 0, 0)
+    canvas.toBlob(
+      async (blob) => {
+        if (!blob) return
+        stopStoreImgCam()
+        setStoreImgPreview(canvas.toDataURL("image/jpeg"))
+        await uploadStoreImage(blob, "image/jpeg")
+      },
+      "image/jpeg",
+      0.9
+    )
+  }
+
+  const closeStoreImgModal = () => {
+    stopStoreImgCam()
+    setStoreImgModalOpen(false)
+    setStoreImgStatus("idle")
+    setStoreImgError("")
+    setStoreImgPreview("")
+    setStoreImgMode("upload")
+    setStoreImgCameras([])
+    setStoreImgSelectedCam("")
+  }
+
+  // ════════════════════════════════════════
+  // MAP
+  // ════════════════════════════════════════
   const requestGeolocation = () => {
     if (!navigator.geolocation) {
       setGeoStatus("unsupported")
@@ -415,7 +543,9 @@ export default function RegistrationPage() {
     closeMapModal()
   }
 
-  // Webcam
+  // ════════════════════════════════════════
+  // KTP WEBCAM
+  // ════════════════════════════════════════
   const startWebcam = async (deviceId?: string) => {
     try {
       if (streamRef.current) {
@@ -432,9 +562,9 @@ export default function RegistrationPage() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().catch((err) => {
-            console.warn("play() error:", err)
-          })
+          videoRef.current
+            ?.play()
+            .catch((err) => console.warn("play() error:", err))
         }
       }
       const devices = await navigator.mediaDevices.enumerateDevices()
@@ -631,7 +761,6 @@ export default function RegistrationPage() {
         >
           <Sidebar isDark={isDark} T={T} />
         </Drawer>
-
         <Drawer
           variant="permanent"
           sx={{
@@ -889,6 +1018,182 @@ export default function RegistrationPage() {
                     {/* ════ STEP 1 ════ */}
                     {step === 1 && (
                       <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                        {/* ── FOTO TOKO ── */}
+                        <Box
+                          sx={{
+                            mb: 3,
+                            pb: 3,
+                            borderBottom: `1px solid ${p.border}`
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              mb: 2
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 4,
+                                height: 16,
+                                bgcolor: "#1e3a8a",
+                                borderRadius: 2
+                              }}
+                            />
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: p.textSecondary,
+                                fontFamily: "'Nunito', sans-serif",
+                                letterSpacing: "0.04em"
+                              }}
+                            >
+                              FOTO TOKO{" "}
+                              <span
+                                style={{ color: p.textMuted, fontWeight: 400 }}
+                              >
+                                (opsional)
+                              </span>
+                            </p>
+                          </Box>
+
+                          {storeData.storeImageUrl ? (
+                            // Preview gambar yang sudah diupload
+                            <Box
+                              sx={{
+                                position: "relative",
+                                display: "inline-block",
+                                width: "100%"
+                              }}
+                            >
+                              <img
+                                src={storeData.storeImageUrl}
+                                alt="Foto Toko"
+                                style={{
+                                  width: "100%",
+                                  maxHeight: 220,
+                                  objectFit: "cover",
+                                  borderRadius: 8,
+                                  border: `1px solid ${isDark ? "#1a5c38" : "#bbf7d0"}`
+                                }}
+                              />
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  top: 8,
+                                  right: 8,
+                                  display: "flex",
+                                  gap: 1
+                                }}
+                              >
+                                <button
+                                  onClick={() => setStoreImgModalOpen(true)}
+                                  style={{
+                                    background: "rgba(30,58,138,0.85)",
+                                    border: "none",
+                                    borderRadius: 6,
+                                    color: "#fff",
+                                    fontSize: 11,
+                                    fontFamily: "'Nunito', sans-serif",
+                                    fontWeight: 700,
+                                    padding: "5px 10px",
+                                    cursor: "pointer"
+                                  }}
+                                >
+                                  Ganti
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    updateStore("storeImageUrl", "")
+                                  }
+                                  style={{
+                                    background: "rgba(239,68,68,0.85)",
+                                    border: "none",
+                                    borderRadius: 6,
+                                    color: "#fff",
+                                    fontSize: 11,
+                                    fontFamily: "'Nunito', sans-serif",
+                                    fontWeight: 700,
+                                    padding: "5px 10px",
+                                    cursor: "pointer"
+                                  }}
+                                >
+                                  Hapus
+                                </button>
+                              </Box>
+                              <Box
+                                sx={{
+                                  mt: 1,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 0.75,
+                                  px: 1.5,
+                                  py: 0.75,
+                                  bgcolor: isDark ? "#0a2e1c" : "#f0fdf4",
+                                  border: `1px solid ${isDark ? "#1a5c38" : "#bbf7d0"}`,
+                                  borderRadius: "4px"
+                                }}
+                              >
+                                <span style={{ fontSize: 11 }}>✓</span>
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    color: isDark ? "#4ade80" : "#16a34a",
+                                    fontFamily: "'Nunito', sans-serif",
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  Foto toko berhasil diupload
+                                </span>
+                              </Box>
+                            </Box>
+                          ) : (
+                            // Tombol upload
+                            <Box
+                              onClick={() => setStoreImgModalOpen(true)}
+                              sx={{
+                                border: `1.5px dashed ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                                borderRadius: "8px",
+                                py: 4,
+                                textAlign: "center",
+                                cursor: "pointer",
+                                "&:hover": {
+                                  borderColor: "#1e3a8a",
+                                  bgcolor: isDark ? "#0d1f3c" : "#eff6ff"
+                                },
+                                transition: "all 0.2s"
+                              }}
+                            >
+                              <p
+                                style={{
+                                  margin: 0,
+                                  fontSize: 14,
+                                  color: "#1e3a8a",
+                                  fontFamily: "'Nunito', sans-serif",
+                                  fontWeight: 700
+                                }}
+                              >
+                                Upload Foto Toko
+                              </p>
+                              <p
+                                style={{
+                                  margin: "4px 0 0",
+                                  fontSize: 11,
+                                  color: p.textMuted,
+                                  fontFamily: "'Nunito', sans-serif"
+                                }}
+                              >
+                                Klik untuk upload atau gunakan kamera · JPG,
+                                PNG, WEBP · Maks 5MB
+                              </p>
+                            </Box>
+                          )}
+                        </Box>
+
                         <Box
                           sx={{
                             display: "grid",
@@ -1085,7 +1390,7 @@ export default function RegistrationPage() {
                           </Box>
                         </Box>
 
-                        {/* ── Location Cascade Selector ── */}
+                        {/* Location Cascade */}
                         <Box
                           sx={{
                             mt: 2.5,
@@ -1440,7 +1745,521 @@ export default function RegistrationPage() {
         </Box>
       </Box>
 
-      {/* MAP MODAL */}
+      {/* ════════════════════════════════════════
+          STORE IMAGE MODAL
+      ════════════════════════════════════════ */}
+      <Modal open={storeImgModalOpen} onClose={closeStoreImgModal}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: { xs: "95vw", sm: 520 },
+            maxHeight: { xs: "90vh", sm: "85vh" },
+            bgcolor: p.bgPaper,
+            border: `1px solid ${p.border}`,
+            borderRadius: "10px",
+            boxShadow: p.menuShadow,
+            outline: "none",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              px: 3,
+              py: 2,
+              borderBottom: `1px solid ${p.border}`,
+              bgcolor: p.bg,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexShrink: 0
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 30,
+                  height: 30,
+                  bgcolor: isDark ? "#0d1f3c" : "#e6f1fb",
+                  border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14
+                }}
+              >
+                🏪
+              </Box>
+              <Box>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: p.textPrimary,
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Foto Toko
+                </p>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 11,
+                    color: p.textMuted,
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Upload atau gunakan kamera
+                </p>
+              </Box>
+            </Box>
+            <button
+              onClick={closeStoreImgModal}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: p.textMuted,
+                fontSize: 18,
+                lineHeight: 1,
+                padding: 4
+              }}
+            >
+              ✕
+            </button>
+          </Box>
+
+          <Box sx={{ p: 3, overflowY: "auto", flex: 1 }}>
+            {/* Tab */}
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                p: 0.5,
+                bgcolor: p.bg,
+                border: `1px solid ${p.border}`,
+                borderRadius: "6px",
+                mb: 3
+              }}
+            >
+              {(["upload", "camera"] as const).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    setStoreImgMode(m)
+                    if (m === "upload") stopStoreImgCam()
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "7px 12px",
+                    border: `1px solid ${storeImgMode === m ? (isDark ? "#1e3a8a" : "#b5d4f4") : "transparent"}`,
+                    borderRadius: "4px",
+                    background:
+                      storeImgMode === m
+                        ? isDark
+                          ? "#0d1f3c"
+                          : "#e6f1fb"
+                        : "transparent",
+                    color: storeImgMode === m ? "#1e3a8a" : p.textSecondary,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: "'Nunito', sans-serif",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {m === "upload" ? "📎 Upload File" : "📷 Kamera"}
+                </button>
+              ))}
+            </Box>
+
+            {/* Upload Mode */}
+            {storeImgMode === "upload" && (
+              <>
+                <input
+                  ref={storeImgFileRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleStoreImgFile}
+                  style={{ display: "none" }}
+                />
+                {!storeImgPreview ? (
+                  <Box
+                    onClick={() =>
+                      storeImgStatus !== "uploading" &&
+                      storeImgFileRef.current?.click()
+                    }
+                    sx={{
+                      border: `1.5px dashed ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                      borderRadius: "8px",
+                      py: 5,
+                      textAlign: "center",
+                      cursor:
+                        storeImgStatus === "uploading"
+                          ? "not-allowed"
+                          : "pointer",
+                      opacity: storeImgStatus === "uploading" ? 0.5 : 1,
+                      "&:hover": {
+                        borderColor: "#1e3a8a",
+                        bgcolor: isDark ? "#0d1f3c" : "#eff6ff"
+                      },
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    <p style={{ margin: "0 0 6px", fontSize: 28 }}>📎</p>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 14,
+                        color: "#1e3a8a",
+                        fontFamily: "'Nunito', sans-serif",
+                        fontWeight: 700
+                      }}
+                    >
+                      Klik untuk pilih foto toko
+                    </p>
+                    <p
+                      style={{
+                        margin: "4px 0 0",
+                        fontSize: 11,
+                        color: p.textMuted,
+                        fontFamily: "'Nunito', sans-serif"
+                      }}
+                    >
+                      JPG, PNG, WEBP · Maks 5MB
+                    </p>
+                  </Box>
+                ) : (
+                  <Box sx={{ position: "relative" }}>
+                    <img
+                      src={storeImgPreview}
+                      alt="Preview"
+                      style={{
+                        width: "100%",
+                        borderRadius: 8,
+                        border: `1px solid ${p.border}`,
+                        maxHeight: 220,
+                        objectFit: "cover"
+                      }}
+                    />
+                    {storeImgStatus !== "uploading" &&
+                      storeImgStatus !== "success" && (
+                        <button
+                          onClick={() => {
+                            setStoreImgPreview("")
+                            setStoreImgStatus("idle")
+                            setStoreImgError("")
+                          }}
+                          style={{
+                            position: "absolute",
+                            top: 8,
+                            right: 8,
+                            background: "rgba(0,0,0,0.5)",
+                            border: "none",
+                            borderRadius: "50%",
+                            width: 28,
+                            height: 28,
+                            color: "#fff",
+                            cursor: "pointer",
+                            fontSize: 12
+                          }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                  </Box>
+                )}
+              </>
+            )}
+
+            {/* Camera Mode */}
+            {storeImgMode === "camera" && (
+              <Box>
+                <Box
+                  sx={{
+                    position: "relative",
+                    bgcolor: "#000",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    aspectRatio: { xs: "4/3", sm: "16/9" },
+                    minHeight: { xs: 220, sm: "auto" },
+                    mb: 1.5
+                  }}
+                >
+                  <video
+                    ref={storeImgVideoRef}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block"
+                    }}
+                    playsInline
+                    muted
+                  />
+                  <canvas ref={storeImgCanvasRef} style={{ display: "none" }} />
+                  {!storeImgCamActive && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 1
+                      }}
+                    >
+                      <p
+                        style={{
+                          color: "#888",
+                          fontSize: 12,
+                          fontFamily: "'Nunito', sans-serif",
+                          margin: 0
+                        }}
+                      >
+                        Kamera belum aktif
+                      </p>
+                      <button
+                        onClick={() => startStoreImgCam()}
+                        style={{
+                          background: "#1e3a8a",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: 6,
+                          padding: "8px 20px",
+                          fontSize: 13,
+                          fontFamily: "'Nunito', sans-serif",
+                          fontWeight: 700,
+                          cursor: "pointer"
+                        }}
+                      >
+                        Aktifkan Kamera
+                      </button>
+                    </Box>
+                  )}
+                  {storeImgCamActive && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        inset: 16,
+                        border: "2px solid rgba(59,130,246,0.6)",
+                        borderRadius: "4px",
+                        pointerEvents: "none"
+                      }}
+                    />
+                  )}
+                </Box>
+
+                {storeImgCamActive && storeImgCameras.length > 1 && (
+                  <Box sx={{ mb: 1.5 }}>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: p.textMuted,
+                        marginBottom: 5,
+                        fontFamily: "'Nunito', sans-serif"
+                      }}
+                    >
+                      Pilih Kamera
+                    </label>
+                    <select
+                      value={storeImgSelectedCam}
+                      onChange={(e) => {
+                        setStoreImgSelectedCam(e.target.value)
+                        startStoreImgCam(e.target.value)
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: 6,
+                        border: `1px solid ${p.border}`,
+                        background: isDark ? "#111" : "#fff",
+                        color: p.textPrimary,
+                        fontFamily: "'Nunito', sans-serif",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {storeImgCameras.map((cam, idx) => (
+                        <option key={cam.deviceId} value={cam.deviceId}>
+                          {cam.label ||
+                            (idx === 0
+                              ? "Kamera Belakang"
+                              : idx === 1
+                                ? "Kamera Depan"
+                                : `Kamera ${idx + 1}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </Box>
+                )}
+
+                {storeImgCamActive && (
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <button
+                      onClick={captureStoreImgCam}
+                      disabled={storeImgStatus === "uploading"}
+                      style={{
+                        flex: 1,
+                        background: "#1e3a8a",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 6,
+                        padding: "9px",
+                        fontSize: 13,
+                        fontFamily: "'Nunito', sans-serif",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        opacity: storeImgStatus === "uploading" ? 0.6 : 1
+                      }}
+                    >
+                      📸 Ambil Foto
+                    </button>
+                    <button
+                      onClick={stopStoreImgCam}
+                      style={{
+                        padding: "9px 16px",
+                        border: `1px solid ${p.border}`,
+                        borderRadius: 6,
+                        background: "transparent",
+                        color: p.textSecondary,
+                        fontSize: 13,
+                        fontFamily: "'Nunito', sans-serif",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Batal
+                    </button>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {/* Status banners */}
+            {storeImgStatus === "uploading" && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  mt: 2.5,
+                  p: 1.5,
+                  bgcolor: isDark ? "#0d1f3c" : "#e6f1fb",
+                  border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                  borderRadius: "6px"
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    border: "2px solid #1e3a8a",
+                    borderTopColor: "transparent",
+                    borderRadius: "50%",
+                    animation: "spin 0.8s linear infinite",
+                    "@keyframes spin": {
+                      from: { transform: "rotate(0deg)" },
+                      to: { transform: "rotate(360deg)" }
+                    },
+                    flexShrink: 0
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: "#1e3a8a",
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  Mengupload foto toko...
+                </span>
+              </Box>
+            )}
+            {storeImgStatus === "success" && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  mt: 2.5,
+                  p: 1.5,
+                  bgcolor: isDark ? "#0a2e1c" : "#f0fdf4",
+                  border: `1px solid ${isDark ? "#1a5c38" : "#bbf7d0"}`,
+                  borderRadius: "6px"
+                }}
+              >
+                <span style={{ color: "#16a34a", fontSize: 16 }}>✓</span>
+                <span
+                  style={{
+                    fontSize: 13,
+                    color: isDark ? "#4ade80" : "#16a34a",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 600
+                  }}
+                >
+                  Foto toko berhasil diupload! Menutup...
+                </span>
+              </Box>
+            )}
+            {storeImgStatus === "error" && (
+              <Box
+                sx={{
+                  mt: 2.5,
+                  p: 1.5,
+                  bgcolor: isDark ? "#2e1010" : "#fef2f2",
+                  border: `1px solid ${isDark ? "#5a1a1a" : "#fecaca"}`,
+                  borderRadius: "6px"
+                }}
+              >
+                <p
+                  style={{
+                    margin: "0 0 8px",
+                    fontSize: 13,
+                    color: "#ef4444",
+                    fontFamily: "'Nunito', sans-serif"
+                  }}
+                >
+                  {storeImgError}
+                </p>
+                <button
+                  onClick={() => {
+                    setStoreImgStatus("idle")
+                    setStoreImgError("")
+                    setStoreImgPreview("")
+                  }}
+                  style={{
+                    padding: "6px 14px",
+                    border: "1px solid #ef4444",
+                    borderRadius: 4,
+                    background: "transparent",
+                    color: "#ef4444",
+                    fontSize: 12,
+                    fontFamily: "'Nunito', sans-serif",
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  Coba Lagi
+                </button>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* MAP MODAL — tidak berubah */}
       <Modal open={mapModalOpen} onClose={closeMapModal}>
         <Box
           sx={{
@@ -1511,7 +2330,6 @@ export default function RegistrationPage() {
               ✕
             </button>
           </Box>
-
           <Box
             sx={{
               flex: "1 1 0",
@@ -1522,7 +2340,6 @@ export default function RegistrationPage() {
               flexDirection: "column"
             }}
           >
-            {/* Geo banner */}
             {geoStatus === "idle" || geoStatus === "requesting" ? (
               <Box
                 sx={{
@@ -1680,7 +2497,6 @@ export default function RegistrationPage() {
               </Box>
             ) : null}
 
-            {/* Search */}
             <Box sx={{ px: 3, pt: 2.5, pb: 1.5 }}>
               <label
                 style={{
@@ -1773,7 +2589,6 @@ export default function RegistrationPage() {
               </p>
             </Box>
 
-            {/* Map */}
             <Box
               sx={{
                 mx: 3,
@@ -1852,7 +2667,6 @@ export default function RegistrationPage() {
               </Box>
             )}
           </Box>
-
           <Box
             sx={{
               px: 3,
