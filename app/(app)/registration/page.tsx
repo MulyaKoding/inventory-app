@@ -431,7 +431,11 @@ export default function RegistrationPage() {
       streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.play()
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch((err) => {
+            console.warn("play() error:", err)
+          })
+        }
       }
       const devices = await navigator.mediaDevices.enumerateDevices()
       setCameras(devices.filter((d) => d.kind === "videoinput"))
@@ -581,7 +585,7 @@ export default function RegistrationPage() {
         severity: "success"
       })
       setSubmitSuccess(true)
-      setTimeout(() => router.push("/dashboard"), 2000)
+      setTimeout(() => router.push("/list-toko"), 2000)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan"
       setSubmitError(msg)
