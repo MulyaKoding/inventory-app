@@ -72,7 +72,7 @@
 | **Language**     | TypeScript                                                              |
 | **UI Library**   | [MUI v6](https://mui.com/) + custom inline styles                       |
 | **ORM**          | [Prisma](https://www.prisma.io/)                                        |
-| **Database**     | PostgreSQL (via Prisma)                                                 |
+| **Database**     | Mongo DB (via Prisma)                                                   |
 | **Auth**         | Custom JWT / Session                                                    |
 | **Storage**      | [Cloudinary](https://cloudinary.com/) (foto toko & KTP)                 |
 | **Maps**         | Canvas Map custom + [Nominatim](https://nominatim.org/) (OpenStreetMap) |
