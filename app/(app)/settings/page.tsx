@@ -11,7 +11,8 @@ import {
   Alert,
   Modal,
   Skeleton,
-  Chip
+  Chip,
+  useMediaQuery
 } from "@mui/material"
 import Header from "../components/header/page"
 import Sidebar from "../components/sidebar"
@@ -482,6 +483,233 @@ function ImageModal({
         </Box>
       </Box>
     </Modal>
+  )
+}
+
+function StoreCard({
+  store,
+  isDark,
+  p,
+  onEdit
+}: {
+  store: Store
+  isDark: boolean
+  p: Record<string, string>
+  onEdit: () => void
+}) {
+  const sc = statusColor(store.status, isDark)
+  return (
+    <Box
+      sx={{
+        border: `1px solid ${p.border}`,
+        borderRadius: "8px",
+        bgcolor: p.bgPaper,
+        p: 2,
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.5
+      }}
+    >
+      {/* Header row */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 1
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            flex: 1,
+            minWidth: 0
+          }}
+        >
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: "6px",
+              bgcolor: isDark ? "#0d1f3c" : "#e6f1fb",
+              border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              flexShrink: 0
+            }}
+          >
+            {store.storeImageUrl ? (
+              <Image
+                src={store.storeImageUrl}
+                alt={store.storeName}
+                width={36}
+                height={36}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: 6
+                }}
+              />
+            ) : (
+              "🏪"
+            )}
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 14,
+                fontWeight: 700,
+                color: p.textPrimary,
+                fontFamily: "'Nunito', sans-serif",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+              }}
+            >
+              {store.storeName}
+            </p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 11,
+                fontWeight: 700,
+                color: isDark ? "#60a5fa" : "#1e3a8a",
+                fontFamily: "'Nunito', sans-serif"
+              }}
+            >
+              {store.storeId}
+            </p>
+          </Box>
+        </Box>
+        <span
+          style={{
+            display: "inline-block",
+            padding: "3px 10px",
+            borderRadius: 100,
+            background: sc.bg,
+            color: sc.text,
+            border: `1px solid ${sc.border}`,
+            fontSize: 10,
+            fontWeight: 700,
+            fontFamily: "'Nunito', sans-serif",
+            whiteSpace: "nowrap",
+            flexShrink: 0
+          }}
+        >
+          {sc.label}
+        </span>
+      </Box>
+
+      {/* Info grid 2x2 */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 1,
+          bgcolor: p.bg,
+          border: `1px solid ${p.border}`,
+          borderRadius: "6px",
+          p: 1.5
+        }}
+      >
+        {[
+          { label: "Jenis", val: store.storeType },
+          { label: "Telepon", val: store.storePhone },
+          { label: "Pemilik", val: store.owner.fullName },
+          { label: "Kota", val: `${store.storeCity}, ${store.storeProvince}` }
+        ].map((item) => (
+          <Box key={item.label}>
+            <p
+              style={{
+                margin: "0 0 1px",
+                fontSize: 9,
+                fontWeight: 700,
+                color: p.textMuted,
+                fontFamily: "'Nunito', sans-serif",
+                letterSpacing: "0.05em"
+              }}
+            >
+              {item.label.toUpperCase()}
+            </p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 12,
+                fontWeight: 600,
+                color: p.textPrimary,
+                fontFamily: "'Nunito', sans-serif",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap"
+              }}
+            >
+              {item.val}
+            </p>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Footer */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between"
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            color: p.textMuted,
+            fontFamily: "'Nunito', sans-serif"
+          }}
+        >
+          {new Date(store.createdAt).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          })}
+        </span>
+        <button
+          onClick={onEdit}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "6px 14px",
+            border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+            borderRadius: 6,
+            background: isDark ? "#0d1f3c" : "#e6f1fb",
+            color: isDark ? "#60a5fa" : "#1e3a8a",
+            fontSize: 12,
+            fontWeight: 700,
+            fontFamily: "'Nunito', sans-serif",
+            cursor: "pointer"
+          }}
+        >
+          <svg
+            width={12}
+            height={12}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          Edit
+        </button>
+      </Box>
+    </Box>
   )
 }
 
@@ -1484,6 +1712,7 @@ export default function SettingsPage() {
     }),
     [isDark]
   )
+  const isMobile = useMediaQuery("(max-width: 768px)")
   const [mobileOpen, setMobileOpen] = useState(false)
   const [stores, setStores] = useState<Store[]>([])
   const [loading, setLoading] = useState(true)
@@ -1829,329 +2058,403 @@ export default function SettingsPage() {
                 </Box>
               </Box>
 
-              {/* Table */}
-              <Box sx={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontFamily: "'Nunito', sans-serif"
+              {/* Mobile Card List */}
+              {isMobile ? (
+                <Box
+                  sx={{
+                    p: 1.5,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1.5
                   }}
                 >
-                  <thead>
-                    <tr
-                      style={{
-                        background: p.tableHeadBg,
-                        borderBottom: `1px solid ${p.border}`
-                      }}
-                    >
-                      {[
-                        "ID TOKO",
-                        "NAMA TOKO",
-                        "JENIS",
-                        "PEMILIK",
-                        "KOTA",
-                        "STATUS",
-                        "TERDAFTAR",
-                        "AKSI"
-                      ].map((col) => (
-                        <th
-                          key={col}
-                          style={{
-                            padding: "10px 16px",
-                            textAlign: "left",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: p.textMuted,
-                            letterSpacing: "0.08em",
-                            whiteSpace: "nowrap"
-                          }}
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      Array.from({ length: 5 }).map((_, i) => (
-                        <tr key={i}>
-                          {Array.from({ length: 8 }).map((_, j) => (
-                            <td key={j} style={{ padding: "14px 16px" }}>
-                              <Skeleton
-                                variant="text"
-                                width={j === 1 ? "80%" : "60%"}
-                                height={14}
-                                sx={{ bgcolor: isDark ? "#1f1f1f" : "#f1f5f9" }}
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                    ) : filtered.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={8}
-                          style={{ padding: "48px 16px", textAlign: "center" }}
-                        >
-                          <p
+                  {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <Box
+                        key={i}
+                        sx={{
+                          border: `1px solid ${p.border}`,
+                          borderRadius: "8px",
+                          p: 2
+                        }}
+                      >
+                        {[100, 60, 80, 50].map((w, j) => (
+                          <Box
+                            key={j}
+                            sx={{
+                              height: 11,
+                              borderRadius: 1,
+                              bgcolor: isDark ? "#1f1f1f" : "#f1f5f9",
+                              width: `${w}%`,
+                              mb: 1.2,
+                              animation: "pulse 1.5s ease-in-out infinite",
+                              "@keyframes pulse": {
+                                "0%, 100%": { opacity: 1 },
+                                "50%": { opacity: 0.4 }
+                              }
+                            }}
+                          />
+                        ))}
+                      </Box>
+                    ))
+                  ) : filtered.length === 0 ? (
+                    <Box sx={{ py: 6, textAlign: "center" }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: 14,
+                          color: p.textMuted,
+                          fontFamily: "'Nunito', sans-serif"
+                        }}
+                      >
+                        {search || filterStatus !== "all"
+                          ? "Tidak ada toko yang sesuai filter"
+                          : "Belum ada toko terdaftar"}
+                      </p>
+                    </Box>
+                  ) : (
+                    filtered.map((store) => (
+                      <StoreCard
+                        key={store.id}
+                        store={store}
+                        isDark={isDark}
+                        p={p}
+                        onEdit={() => openEdit(store)}
+                      />
+                    ))
+                  )}
+                </Box>
+              ) : (
+                <Box sx={{ overflowX: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      fontFamily: "'Nunito', sans-serif"
+                    }}
+                  >
+                    <thead>
+                      <tr
+                        style={{
+                          background: p.tableHeadBg,
+                          borderBottom: `1px solid ${p.border}`
+                        }}
+                      >
+                        {[
+                          "ID TOKO",
+                          "NAMA TOKO",
+                          "JENIS",
+                          "PEMILIK",
+                          "KOTA",
+                          "STATUS",
+                          "TERDAFTAR",
+                          "AKSI"
+                        ].map((col) => (
+                          <th
+                            key={col}
                             style={{
-                              margin: 0,
-                              fontSize: 14,
+                              padding: "10px 16px",
+                              textAlign: "left",
+                              fontSize: 10,
+                              fontWeight: 700,
                               color: p.textMuted,
-                              fontFamily: "'Nunito', sans-serif"
+                              letterSpacing: "0.08em",
+                              whiteSpace: "nowrap"
                             }}
                           >
-                            {search || filterStatus !== "all"
-                              ? "Tidak ada toko yang sesuai filter"
-                              : "Belum ada toko terdaftar"}
-                          </p>
-                        </td>
+                            {col}
+                          </th>
+                        ))}
                       </tr>
-                    ) : (
-                      filtered.map((store, idx) => {
-                        const sc = statusColor(store.status, isDark)
-                        const isEven = idx % 2 === 0
-                        return (
-                          <tr
-                            key={store.id}
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <tr key={i}>
+                            {Array.from({ length: 8 }).map((_, j) => (
+                              <td key={j} style={{ padding: "14px 16px" }}>
+                                <Skeleton
+                                  variant="text"
+                                  width={j === 1 ? "80%" : "60%"}
+                                  height={14}
+                                  sx={{
+                                    bgcolor: isDark ? "#1f1f1f" : "#f1f5f9"
+                                  }}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      ) : filtered.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={8}
                             style={{
-                              background: isEven
-                                ? "transparent"
-                                : isDark
-                                  ? "rgba(255,255,255,0.01)"
-                                  : "rgba(0,0,0,0.01)",
-                              borderBottom: `1px solid ${isDark ? "#111" : "#f8fafc"}`,
-                              transition: "background 0.15s"
-                            }}
-                            onMouseEnter={(e) => {
-                              ;(
-                                e.currentTarget as HTMLTableRowElement
-                              ).style.background = isDark
-                                ? "#161616"
-                                : "#f8fafc"
-                            }}
-                            onMouseLeave={(e) => {
-                              ;(
-                                e.currentTarget as HTMLTableRowElement
-                              ).style.background = isEven
-                                ? "transparent"
-                                : isDark
-                                  ? "rgba(255,255,255,0.01)"
-                                  : "rgba(0,0,0,0.01)"
+                              padding: "48px 16px",
+                              textAlign: "center"
                             }}
                           >
-                            <td style={{ padding: "12px 16px" }}>
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  fontWeight: 700,
-                                  color: isDark ? "#60a5fa" : "#1e3a8a",
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {store.storeId}
-                              </span>
-                            </td>
-                            <td style={{ padding: "12px 16px", minWidth: 180 }}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1.5
-                                }}
+                            <p
+                              style={{
+                                margin: 0,
+                                fontSize: 14,
+                                color: p.textMuted,
+                                fontFamily: "'Nunito', sans-serif"
+                              }}
+                            >
+                              {search || filterStatus !== "all"
+                                ? "Tidak ada toko yang sesuai filter"
+                                : "Belum ada toko terdaftar"}
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        filtered.map((store, idx) => {
+                          const sc = statusColor(store.status, isDark)
+                          const isEven = idx % 2 === 0
+                          return (
+                            <tr
+                              key={store.id}
+                              style={{
+                                background: isEven
+                                  ? "transparent"
+                                  : isDark
+                                    ? "rgba(255,255,255,0.01)"
+                                    : "rgba(0,0,0,0.01)",
+                                borderBottom: `1px solid ${isDark ? "#111" : "#f8fafc"}`,
+                                transition: "background 0.15s"
+                              }}
+                              onMouseEnter={(e) => {
+                                ;(
+                                  e.currentTarget as HTMLTableRowElement
+                                ).style.background = isDark
+                                  ? "#161616"
+                                  : "#f8fafc"
+                              }}
+                              onMouseLeave={(e) => {
+                                ;(
+                                  e.currentTarget as HTMLTableRowElement
+                                ).style.background = isEven
+                                  ? "transparent"
+                                  : isDark
+                                    ? "rgba(255,255,255,0.01)"
+                                    : "rgba(0,0,0,0.01)"
+                              }}
+                            >
+                              <td style={{ padding: "12px 16px" }}>
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    color: isDark ? "#60a5fa" : "#1e3a8a",
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  {store.storeId}
+                                </span>
+                              </td>
+                              <td
+                                style={{ padding: "12px 16px", minWidth: 180 }}
                               >
                                 <Box
                                   sx={{
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: "6px",
-                                    bgcolor: isDark ? "#0d1f3c" : "#e6f1fb",
-                                    border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
                                     display: "flex",
                                     alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: 14,
-                                    flexShrink: 0
+                                    gap: 1.5
                                   }}
                                 >
-                                  {store.storeImageUrl ? (
-                                    <Image
-                                      src={store.storeImageUrl}
-                                      alt={store.storeName}
-                                      width={32}
-                                      height={32}
-                                      style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "cover",
-                                        borderRadius: 6
-                                      }}
-                                    />
-                                  ) : (
-                                    "🏪"
-                                  )}
-                                </Box>
-                                <Box>
-                                  <p
-                                    style={{
-                                      margin: 0,
-                                      fontSize: 13,
-                                      fontWeight: 700,
-                                      color: p.textPrimary,
-                                      fontFamily: "'Nunito', sans-serif"
+                                  <Box
+                                    sx={{
+                                      width: 32,
+                                      height: 32,
+                                      borderRadius: "6px",
+                                      bgcolor: isDark ? "#0d1f3c" : "#e6f1fb",
+                                      border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontSize: 14,
+                                      flexShrink: 0
                                     }}
                                   >
-                                    {store.storeName}
-                                  </p>
-                                  {store.storeEmail && (
+                                    {store.storeImageUrl ? (
+                                      <Image
+                                        src={store.storeImageUrl}
+                                        alt={store.storeName}
+                                        width={32}
+                                        height={32}
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                          objectFit: "cover",
+                                          borderRadius: 6
+                                        }}
+                                      />
+                                    ) : (
+                                      "🏪"
+                                    )}
+                                  </Box>
+                                  <Box>
                                     <p
                                       style={{
                                         margin: 0,
-                                        fontSize: 11,
-                                        color: p.textMuted,
+                                        fontSize: 13,
+                                        fontWeight: 700,
+                                        color: p.textPrimary,
                                         fontFamily: "'Nunito', sans-serif"
                                       }}
                                     >
-                                      {store.storeEmail}
+                                      {store.storeName}
                                     </p>
-                                  )}
+                                    {store.storeEmail && (
+                                      <p
+                                        style={{
+                                          margin: 0,
+                                          fontSize: 11,
+                                          color: p.textMuted,
+                                          fontFamily: "'Nunito', sans-serif"
+                                        }}
+                                      >
+                                        {store.storeEmail}
+                                      </p>
+                                    )}
+                                  </Box>
                                 </Box>
-                              </Box>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <span
-                                style={{
-                                  fontSize: 12,
-                                  color: p.textSecondary,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {store.storeType}
-                              </span>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <p
-                                style={{
-                                  margin: 0,
-                                  fontSize: 13,
-                                  fontWeight: 600,
-                                  color: p.textPrimary,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {store.owner.fullName}
-                              </p>
-                              <p
-                                style={{
-                                  margin: 0,
-                                  fontSize: 10,
-                                  color: p.textMuted,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                NIK: {store.owner.nik.slice(0, 6)}••••••••••
-                              </p>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <p
-                                style={{
-                                  margin: 0,
-                                  fontSize: 12,
-                                  color: p.textPrimary,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {store.storeCity}
-                              </p>
-                              <p
-                                style={{
-                                  margin: 0,
-                                  fontSize: 10,
-                                  color: p.textMuted,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {store.storeProvince}
-                              </p>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <span
-                                style={{
-                                  display: "inline-block",
-                                  padding: "3px 10px",
-                                  borderRadius: 100,
-                                  background: sc.bg,
-                                  color: sc.text,
-                                  border: `1px solid ${sc.border}`,
-                                  fontSize: 11,
-                                  fontWeight: 700,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {sc.label}
-                              </span>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  color: p.textMuted,
-                                  fontFamily: "'Nunito', sans-serif"
-                                }}
-                              >
-                                {new Date(store.createdAt).toLocaleDateString(
-                                  "id-ID",
-                                  {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric"
-                                  }
-                                )}
-                              </span>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <button
-                                onClick={() => openEdit(store)}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 5,
-                                  padding: "6px 14px",
-                                  border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
-                                  borderRadius: 6,
-                                  background: isDark ? "#0d1f3c" : "#e6f1fb",
-                                  color: isDark ? "#60a5fa" : "#1e3a8a",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  fontFamily: "'Nunito', sans-serif",
-                                  cursor: "pointer",
-                                  whiteSpace: "nowrap"
-                                }}
-                              >
-                                <svg
-                                  width={12}
-                                  height={12}
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth={2.5}
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
+                              </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <span
+                                  style={{
+                                    fontSize: 12,
+                                    color: p.textSecondary,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
                                 >
-                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
-                                Edit
-                              </button>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </Box>
+                                  {store.storeType}
+                                </span>
+                              </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    color: p.textPrimary,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  {store.owner.fullName}
+                                </p>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: 10,
+                                    color: p.textMuted,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  NIK: {store.owner.nik.slice(0, 6)}••••••••••
+                                </p>
+                              </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: 12,
+                                    color: p.textPrimary,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  {store.storeCity}
+                                </p>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: 10,
+                                    color: p.textMuted,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  {store.storeProvince}
+                                </p>
+                              </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <span
+                                  style={{
+                                    display: "inline-block",
+                                    padding: "3px 10px",
+                                    borderRadius: 100,
+                                    background: sc.bg,
+                                    color: sc.text,
+                                    border: `1px solid ${sc.border}`,
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  {sc.label}
+                                </span>
+                              </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    color: p.textMuted,
+                                    fontFamily: "'Nunito', sans-serif"
+                                  }}
+                                >
+                                  {new Date(store.createdAt).toLocaleDateString(
+                                    "id-ID",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric"
+                                    }
+                                  )}
+                                </span>
+                              </td>
+                              <td style={{ padding: "12px 16px" }}>
+                                <button
+                                  onClick={() => openEdit(store)}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 5,
+                                    padding: "6px 14px",
+                                    border: `1px solid ${isDark ? "#1e3a8a" : "#b5d4f4"}`,
+                                    borderRadius: 6,
+                                    background: isDark ? "#0d1f3c" : "#e6f1fb",
+                                    color: isDark ? "#60a5fa" : "#1e3a8a",
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    fontFamily: "'Nunito', sans-serif",
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap"
+                                  }}
+                                >
+                                  <svg
+                                    width={12}
+                                    height={12}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={2.5}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                  </svg>
+                                  Edit
+                                </button>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </Box>
+              )}
 
               {/* Footer count */}
               {!loading && filtered.length > 0 && (
