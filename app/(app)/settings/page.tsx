@@ -880,9 +880,10 @@ function EditStoreModal({
       })
       setSnackbar({
         open: true,
-        msg: "✅ Data toko berhasil disimpan!",
+        msg: "Data toko berhasil disimpan!",
         severity: "success"
       })
+      setTimeout(() => onClose(), 1500)
     } catch (err: unknown) {
       setSnackbar({
         open: true,
@@ -918,9 +919,10 @@ function EditStoreModal({
       onSaved({ ...store, owner: { ...store.owner, ...payload.owner } })
       setSnackbar({
         open: true,
-        msg: "✅ Data pemilik berhasil disimpan!",
+        msg: "Data pemilik berhasil disimpan!",
         severity: "success"
       })
+      setTimeout(() => onClose(), 1500)
     } catch (err: unknown) {
       setSnackbar({
         open: true,
