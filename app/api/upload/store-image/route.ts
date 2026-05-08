@@ -44,7 +44,10 @@ export async function POST(req: NextRequest) {
       ]
     })
 
-    return NextResponse.json({ url: result.secure_url })
+    return NextResponse.json({
+      url: result.secure_url,
+      publicId: result.public_id
+    })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Upload gagal"
     return NextResponse.json({ error: msg }, { status: 500 })

@@ -51,9 +51,9 @@ const EMPTY_LOCATION: LocationValue = {
 
 type EditTab = "store" | "owner"
 
-const EDIT_TABS: { id: EditTab; label: string; icon: string }[] = [
-  { id: "store", label: "Data Toko", icon: "🏪" },
-  { id: "owner", label: "Data Pemilik", icon: "👤" }
+const EDIT_TABS: { id: EditTab; label: string }[] = [
+  { id: "store", label: "Data Toko" },
+  { id: "owner", label: "Data Pemilik" }
 ]
 
 // ─── interfaces ───────────────────────────────────────────
@@ -185,7 +185,7 @@ function ImageModal({
 }: {
   open: boolean
   onClose: () => void
-  onUploaded: (url: string) => void
+  onUploaded: (url: string, publicId: string) => void
   title: string
   icon: string
   isDark: boolean
@@ -217,9 +217,10 @@ function ImageModal({
         new File([blob], isKtp ? "ktp.jpg" : "store.jpg", { type: mimeType })
       )
       const res = await fetch(apiEndpoint, { method: "POST", body: form })
-      const result = await res.json()
+      const result = await res.json() // ✅ sekali saja
       if (!res.ok) throw new Error(result.error || "Gagal upload")
-      onUploaded(result.url)
+
+      onUploaded(result.url, result.publicId ?? "") // ✅ pakai result langsung
       setStatus("success")
       setTimeout(() => handleClose(), 1000)
     } catch (err: unknown) {
@@ -770,6 +771,9 @@ function EditStoreModal({
   const [ownerErrors, setOwnerErrors] = useState<Record<string, string>>({})
   const [ktpModalOpen, setKtpModalOpen] = useState(false)
 
+  const [storeImagePublicId, setStoreImagePublicId] = useState("")
+  const [ownerKtpPublicId, setOwnerKtpPublicId] = useState("")
+
   useEffect(() => {
     if (!store) return
     setStoreName(store.storeName || "")
@@ -1093,7 +1097,6 @@ function EditStoreModal({
                   transition: "background-color 0.2s"
                 }}
               >
-                <span style={{ fontSize: 14 }}>{tab.icon}</span>
                 <p
                   style={{
                     margin: 0,
@@ -1201,7 +1204,21 @@ function EditStoreModal({
                         </button>
                         {storeImageUrl && (
                           <button
-                            onClick={() => setStoreImageUrl("")}
+                            onClick={async () => {
+                              if (storeImagePublicId) {
+                                await fetch("/api/upload/delete", {
+                                  method: "DELETE",
+                                  headers: {
+                                    "Content-Type": "application/json"
+                                  },
+                                  body: JSON.stringify({
+                                    publicId: storeImagePublicId
+                                  })
+                                })
+                              }
+                              setStoreImageUrl("")
+                              setStoreImagePublicId("")
+                            }}
                             style={{
                               padding: "5px 12px",
                               border: "1px solid #fecaca",
@@ -1394,7 +1411,21 @@ function EditStoreModal({
                             📷
                           </Box>
                           <Box
-                            onClick={() => setOwnerKtpUrl("")}
+                            onClick={async () => {
+                              if (ownerKtpPublicId) {
+                                await fetch("/api/upload/delete", {
+                                  method: "DELETE",
+                                  headers: {
+                                    "Content-Type": "application/json"
+                                  },
+                                  body: JSON.stringify({
+                                    publicId: ownerKtpPublicId
+                                  })
+                                })
+                              }
+                              setOwnerKtpUrl("")
+                              setOwnerKtpPublicId("")
+                            }}
                             sx={{
                               width: 24,
                               height: 24,
@@ -1638,7 +1669,10 @@ function EditStoreModal({
       <ImageModal
         open={imgModalOpen}
         onClose={() => setImgModalOpen(false)}
-        onUploaded={(url) => setStoreImageUrl(url)}
+        onUploaded={(url, publicId) => {
+          setStoreImageUrl(url)
+          setStoreImagePublicId(publicId)
+        }}
         title="Ganti Foto Toko"
         icon="🏪"
         isDark={isDark}
@@ -1647,7 +1681,10 @@ function EditStoreModal({
       <ImageModal
         open={ktpModalOpen}
         onClose={() => setKtpModalOpen(false)}
-        onUploaded={(url) => setOwnerKtpUrl(url)}
+        onUploaded={(url, publicId) => {
+          setOwnerKtpUrl(url)
+          setOwnerKtpPublicId(publicId)
+        }}
         title="Upload / Ganti Foto KTP"
         icon="🪪"
         isDark={isDark}
