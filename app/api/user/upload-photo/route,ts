@@ -1,0 +1,79 @@
+import { NextRequest, NextResponse } from "next/server"
+import { v2 as cloudinary } from "cloudinary"
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
+})
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData()
+    const file = formData.get("file") as File | null
+
+    if (!file) {
+      return NextResponse.json(
+        { success: false, message: "File tidak ditemukan" },
+        { status: 400 }
+      )
+    }
+
+    // Validasi tipe file
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json(
+        { success: false, message: "File harus berupa gambar" },
+        { status: 400 }
+      )
+    }
+
+    // Validasi ukuran file (maks 10MB)
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Ukuran file terlalu besar. Maksimal 10MB (file kamu: ${(
+            file.size /
+            1024 /
+            1024
+          ).toFixed(2)}MB)`
+        },
+        { status: 400 }
+      )
+    }
+
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: "User",
+            resource_type: "image",
+            upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET
+          },
+          (error, result) => {
+            if (error) reject(error)
+            else resolve(result)
+          }
+        )
+        .end(buffer)
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: "Foto berhasil diupload",
+      url: uploadResult.secure_url,
+      publicId: uploadResult.public_id
+    })
+  } catch (error) {
+    console.error("Error upload foto:", error)
+    return NextResponse.json(
+      { success: false, message: "Gagal upload foto" },
+      { status: 500 }
+    )
+  }
+}
